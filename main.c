@@ -40,11 +40,8 @@ int main(int argc, char *argv[]) {
 	height = DEFAULT_HEIGHT;
 	border_width = 0;
 
-	int x, y;
-	x = y = 50;
-
 	window = XCreateSimpleWindow(display, RootWindow(display, screen_num),
-		x, y, width, height, border_width, BlackPixel(display,
+		0, 0, width, height, border_width, BlackPixel(display,
 		screen_num), WhitePixel(display, screen_num));
 
 	/***** GC *****/
@@ -67,7 +64,7 @@ int main(int argc, char *argv[]) {
 	wm_hints->flags = StateHint | InputHint;
 
 	XSetWMProperties(display, window, NULL, NULL, argv, argc, size_hints, wm_hints, class_hints);
-	XSelectInput(display, window, ExposureMask | ButtonPressMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask | PointerMotionMask);
+	XSelectInput(display, window, ExposureMask | KeyPressMask | StructureNotifyMask | PointerMotionMask);
 
 	XMapWindow(display, window);
 
