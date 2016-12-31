@@ -80,11 +80,11 @@ int main(int argc, char *argv[]) {
 	/**************/
 
 	size_hints->flags = PPosition | PSize | PMinSize | PMaxSize;
-	size_hints->min_width = width;
-	size_hints->min_height = height;
+	size_hints->min_width = CURRENT_WIDTH;
+	size_hints->min_height = CURRENT_HEIGHT;
 
-	size_hints->max_width = width;
-	size_hints->max_height = height;
+	size_hints->max_width = CURRENT_WIDTH;
+	size_hints->max_height = CURRENT_HEIGHT;
 
 	wm_hints->initial_state = NormalState;
 	wm_hints->input = True;
