@@ -150,38 +150,53 @@ void on_key_press(XEvent *e) {
 
 		/***** size ****/
 		/***** default *****/
-		case XK_0:
+		case XK_d:
+			if (ControlMask != (e->xkey.state & ControlMask)) {
+				break;
+			}
 			change_size(DEFAULT_WIDTH);
 			break;
-		case XK_1:
+		case XK_s:
+			if (ControlMask != (e->xkey.state & ControlMask)) {
+				break;
+			}
 			change_size(SIZE_SMALL);
 			break;
 		/***** medium *****/
-		case XK_2:
+		case XK_m:
+			if (ControlMask != (e->xkey.state & ControlMask)) {
+				break;
+			}
 			change_size(SIZE_MEDIUM);
 			break;
 		/***** tall *****/
-		case XK_3:
+		case XK_t:
+			if (ControlMask != (e->xkey.state & ControlMask)) {
+				break;
+			}
 			change_size(SIZE_TALL);
 			break;
 		/***** fullscreen *****/
-		case XK_4:
+		case XK_f:
+			if (ControlMask != (e->xkey.state & ControlMask)) {
+				break;
+			}
 			change_size(SIZE_FULLSCREEN);
 			break;
 
 
 
 		/***** direction *****/
-		case XK_n:
+		case XK_N:
 			change_direction(DIRECTION_N);
 			break;
-		case XK_s:
+		case XK_S:
 			change_direction(DIRECTION_S);
 			break;
-		case XK_w:
+		case XK_W:
 			change_direction(DIRECTION_W);
 			break;
-		case XK_e:
+		case XK_E:
 			change_direction(DIRECTION_E);
 			break;
 
