@@ -186,6 +186,10 @@ void on_key_press(XEvent *e) {
 
 
 		/***** exit *****/
+		case XK_q:
+			if (ControlMask != (e->xkey.state & ControlMask)) {
+				break;
+			}
 		case XK_Escape:
 			XFreeGC(display, gc);
 			XCloseDisplay(display);
