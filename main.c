@@ -58,6 +58,13 @@ SIZE SIZE_FULLSCREEN;
 unsigned int CURRENT_DIRECTION = DEFAULT_DIRECTON;
 unsigned int CURRENT_WIDTH, CURRENT_HEIGHT, CURRENT_POSITION_X, CURRENT_POSITION_Y, CURRENT_MOUSE_POSITION;
 
+typedef struct {
+    unsigned long   flags;
+    unsigned long   functions;
+    unsigned long   decorations;
+} Hints; /*****  достаточно и 3 свойств *****/
+
+
 
 int main(int argc, char *argv[]) {
 	XEvent e;
@@ -82,6 +89,18 @@ int main(int argc, char *argv[]) {
 	window = XCreateSimpleWindow(display, RootWindow(display, screen_num),
 		0, 0, CURRENT_WIDTH, CURRENT_HEIGHT, 0, BlackPixel(display,
 		screen_num), WhitePixel(display, screen_num));
+
+	/***** window decorations *****/
+	/***** based on http://tonyobryan.com/index.php?article=9 *****/
+	Hints hints;
+	Atom property;
+	hints.flags = 2;
+	hints.decorations = 0;
+	property = XInternAtom(display, "_MOTIF_WM_HINTS", True);
+	XChangeProperty(display, window, 
+		property, property, 
+		/* format */32, /* mode */PropModeReplace, 
+		(unsigned char *)&hints, 3);
 
 	/***** GC *****/
 	XGCValues gc_values;
