@@ -39,6 +39,7 @@ unsigned int HEIGHT_MAX_N, WIDTH_MAX_N,
 	HEIGHT_MAX_E, WIDTH_MAX_E;
 
 unsigned int CURRENT_DIRECTION = DEFAULT_DIRECTON;
+unsigned int CURRENT_WIDTH, CURRENT_HEIGHT;
 
 
 int main(int argc, char *argv[]) {
@@ -61,15 +62,13 @@ int main(int argc, char *argv[]) {
 	screen_num = DefaultScreen(display);
 	screen_ptr = DefaultScreenOfDisplay(display);
 
-	/***** init default sizes *****/
+	/***** init defaults *****/
 	init_directions_sizes();
+	get_default_sizes_for_direction(CURRENT_DIRECTION, &CURRENT_WIDTH, &CURRENT_HEIGHT);
 	/******************************/
 
-	unsigned int width, height;
-	get_default_sizes_for_direction(CURRENT_DIRECTION, &width, &height);
-
 	window = XCreateSimpleWindow(display, RootWindow(display, screen_num),
-		0, 0, width, height, 0, BlackPixel(display,
+		0, 0, CURRENT_WIDTH, CURRENT_HEIGHT, 0, BlackPixel(display,
 		screen_num), WhitePixel(display, screen_num));
 
 	/***** GC *****/
