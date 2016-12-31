@@ -361,40 +361,71 @@ void draw_bg() {
 			break;
 	}
 
+	unsigned int chars_in_number = 4;
+	char *number_formated = (char *)malloc(sizeof(char)*chars_in_number);
+	SIZE total_width = xfs->max_bounds.width * chars_in_number;
+
+	unsigned int x1, x2, y1, y2;
 	unsigned int line_height = line_height_default;
 	for(i = 0; i < FINISH; i+=2) {
 		if ((i % 10) == 0) {
 			line_height = line_height_medium;
-			if ((i % 20) == 0) {
+			if ((i % 50) == 0) {
 				line_height = line_height_big;
 			}
 		} else {
 			line_height = line_height_default;
 		}
-		
 		switch(CURRENT_DIRECTION) {
 			case DIRECTION_N:
-				XDrawLine(display, window, gc, i-1 /***** magic :-) offset *****/, 0, i-1, line_height);
+				x1 = i-1; y1 = 0; x2 = i-1; y2 = line_height;
+				if ((i != 0) && ((i % 50) == 0)) {
+					sprintf(number_formated, "%04d", i);
+					XDrawImageString(display, window, gc, 
+						i - total_width / 2, line_height + xfs->max_bounds.ascent * 2, 
+						number_formated, chars_in_number);
+				}
 				break;
 			case DIRECTION_S:
-				XDrawLine(display, window, gc, i-1, DEFAULT_HEIGHT, i-1, DEFAULT_HEIGHT-line_height);
+				x1 = i-1; y1 = DEFAULT_HEIGHT; x2 = i-1; y2 = DEFAULT_HEIGHT-line_height;
+				if ((i != 0) && ((i % 50) == 0)) {
+					sprintf(number_formated, "%04d", i);
+					XDrawImageString(display, window, gc, 
+						i - total_width / 2, line_height + xfs->max_bounds.ascent, 
+						number_formated, chars_in_number);
+				}
 				break;
 			case DIRECTION_W:
-				XDrawLine(display, window, gc, 0, i-1, line_height, i-1);
+				x1 = 0; y1 = i-2; x2 = line_height; y2 = i-2;
+				if ((i != 0) && ((i % 50) == 0)) {
+					sprintf(number_formated, "%04d", i);
+					XDrawImageString(display, window, gc, 
+						DEFAULT_HEIGHT - total_width, i + xfs->max_bounds.descent + 1, 
+						number_formated, chars_in_number);
+				}
 				break;
 			case DIRECTION_E:
-				XDrawLine(display, window, gc, DEFAULT_HEIGHT, i-1, DEFAULT_HEIGHT-line_height, i-1);
+				x1 = DEFAULT_HEIGHT; y1 = i-2; x2 = DEFAULT_HEIGHT-line_height; y2 = i-2;
+				if ((i != 0) && ((i % 50) == 0)) {
+					sprintf(number_formated, "%04d", i);
+					XDrawImageString(display, window, gc, 
+						xfs->max_bounds.width, i + xfs->max_bounds.descent + 1, 
+						number_formated, chars_in_number);
+				}
 				break;
 		}
+		XDrawLine(display, window, gc, x1, y1, x2, y2);
 	}
+
+	free(number_formated);
 
 	draw_mouse_position();
 }
 
 void draw_mouse_position() {
-	unsigned int chars_in_number = 3;
+	unsigned int chars_in_number = 4;
 	char *number_formated = (char *)malloc(sizeof(char)*chars_in_number);
-	sprintf(number_formated, "%03d", CURRENT_MOUSE_POSITION);
+	sprintf(number_formated, "%04d", CURRENT_MOUSE_POSITION);
 	SIZE total_width = xfs->max_bounds.width * chars_in_number + xfs->max_bounds.descent;
 	switch(CURRENT_DIRECTION) {
 		case DIRECTION_N:
