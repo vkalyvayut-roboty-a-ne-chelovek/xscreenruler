@@ -10,9 +10,9 @@
 typedef unsigned int DIRECTION;
 typedef unsigned int SIZE;
 
-#define SIZE_SMALL (SIZE)250
-#define SIZE_MEDIUM (SIZE)350
-#define SIZE_TALL (SIZE)450
+#define SIZE_SMALL (SIZE)350
+#define SIZE_MEDIUM (SIZE)450
+#define SIZE_TALL (SIZE)600
 #define DEFAULT_HEIGHT (SIZE)75
 #define DEFAULT_WIDTH SIZE_SMALL
 
@@ -33,6 +33,7 @@ typedef unsigned int SIZE;
 void init_default_sizes_and_positions();
 void get_default_sizes_for_direction(DIRECTION, unsigned int *, unsigned int *);
 void on_key_press(XEvent *);
+void on_mouse_move(XEvent *);
 void change_position(DIRECTION);
 void change_size(SIZE);
 void change_direction(DIRECTION);
@@ -45,6 +46,7 @@ Window window;
 int screen_num;
 Screen *screen_ptr;
 GC gc;
+Font font;
 XSizeHints *size_hints;
 XWMHints *wm_hints;
 XClassHint *class_hints;
@@ -52,7 +54,7 @@ XClassHint *class_hints;
 SIZE SIZE_FULLSCREEN;
 
 unsigned int CURRENT_DIRECTION = DEFAULT_DIRECTON;
-unsigned int CURRENT_WIDTH, CURRENT_HEIGHT, CURRENT_POSITION_X, CURRENT_POSITION_Y;
+unsigned int CURRENT_WIDTH, CURRENT_HEIGHT, CURRENT_POSITION_X, CURRENT_POSITION_Y, CURRENT_MOUSE_POSITION;
 
 
 int main(int argc, char *argv[]) {
@@ -85,6 +87,10 @@ int main(int argc, char *argv[]) {
 	gc_values.background = WhitePixel(display, screen_num);
 	gc_values.foreground = BlackPixel(display, screen_num);
 	gc = XCreateGC(display, window, gc_mask, &gc_values);
+
+	font = XLoadFont(display, "*misc*fixed*");
+	if (! font) { exit(-1); }
+	XSetFont(display, gc, font); 
 	/**************/
 
 	size_hints->flags = PPosition | PSize | PMinSize | PMaxSize;
@@ -118,6 +124,7 @@ int main(int argc, char *argv[]) {
 			case ConfigureNotify:
 				break;
 			case MotionNotify:
+				on_mouse_move(&e);
 				break;
 			default:
 				break;
@@ -209,12 +216,27 @@ void on_key_press(XEvent *e) {
 			}
 		case XK_Escape:
 			XFreeGC(display, gc);
+			XUnloadFont(display, font);
 			XCloseDisplay(display);
 			exit(1);
 			break;
 		default:
 			break;
 	}
+}
+
+void on_mouse_move(XEvent *e) {
+	switch (CURRENT_DIRECTION) {
+		case DIRECTION_N:
+		case DIRECTION_S:
+			CURRENT_MOUSE_POSITION = e->xmotion.x;
+			break;
+		case DIRECTION_W:
+		case DIRECTION_E:
+			CURRENT_MOUSE_POSITION = e->xmotion.y;
+			break;
+	}
+	draw_bg();
 }
 
 void init_default_sizes_and_positions() {
@@ -226,6 +248,7 @@ void init_default_sizes_and_positions() {
 
 	SIZE_FULLSCREEN = xwa.width;
 	CURRENT_POSITION_X = DEFAULT_POSITION_X; CURRENT_POSITION_Y = DEFAULT_POSITION_Y;
+	CURRENT_MOUSE_POSITION = 0;
 }
 
 void get_default_sizes_for_direction(DIRECTION direction, unsigned int *width, unsigned int *height) {
@@ -335,7 +358,6 @@ void draw_bg() {
 			break;
 	}
 
-
 	unsigned int line_height = line_height_default;
 	for(i = 0; i < FINISH; i+=2) {
 		if ((i % 10) == 0) {
@@ -346,19 +368,40 @@ void draw_bg() {
 		} else {
 			line_height = line_height_default;
 		}
+		
 		switch(CURRENT_DIRECTION) {
 			case DIRECTION_N:
-				XDrawLine(display, window, gc, i, 0, i, line_height);
+				XDrawLine(display, window, gc, i-1 /***** magic :-) offset *****/, 0, i-1, line_height);
 				break;
 			case DIRECTION_S:
-				XDrawLine(display, window, gc, i, DEFAULT_HEIGHT, i, DEFAULT_HEIGHT-line_height);
+				XDrawLine(display, window, gc, i-1, DEFAULT_HEIGHT, i-1, DEFAULT_HEIGHT-line_height);
 				break;
 			case DIRECTION_W:
-				XDrawLine(display, window, gc, 0, i, line_height, i);
+				XDrawLine(display, window, gc, 0, i-1, line_height, i-1);
 				break;
 			case DIRECTION_E:
-				XDrawLine(display, window, gc, DEFAULT_HEIGHT, i, DEFAULT_HEIGHT-line_height, i);
+				XDrawLine(display, window, gc, DEFAULT_HEIGHT, i-1, DEFAULT_HEIGHT-line_height, i-1);
 				break;
 		}
 	}
+
+	char *number_formated = (char *)malloc(sizeof(char)*3);
+	sprintf(number_formated, "%03d", CURRENT_MOUSE_POSITION);
+	switch(CURRENT_DIRECTION) {
+		case DIRECTION_N:
+			XDrawImageString(display, window, gc, 5, CURRENT_HEIGHT-5, number_formated, 3);
+			break;
+		case DIRECTION_S:
+			XDrawImageString(display, window, gc, 5, 15, number_formated, 3);
+			break;
+		case DIRECTION_W:
+			XDrawImageString(display, window, gc, CURRENT_WIDTH-25, 15, number_formated, 3);
+			break;
+		case DIRECTION_E:
+			XDrawImageString(display, window, gc, 5, 15, number_formated, 3);
+			break;
+	}
+
+
+	free(number_formated);
 }
