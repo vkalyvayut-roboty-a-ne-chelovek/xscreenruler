@@ -11,6 +11,8 @@ typedef unsigned int DIRECTION;
 
 #define DEFAULT_HEIGHT 50
 #define DEFAULT_WIDTH 350
+#define DEFAULT_POSITION_X 50
+#define DEFAULT_POSITION_Y 50
 
 #define DIRECTION_N (DIRECTION)1
 #define DIRECTION_S (DIRECTION)2
@@ -22,14 +24,15 @@ typedef unsigned int DIRECTION;
 
 /***** functions *****/
 
-void init_directions_sizes();
+void init_default_sizes_and_positions();
 void get_default_sizes_for_direction(DIRECTION, unsigned int *, unsigned int *);
 void on_key_press(XEvent *);
-
+void change_position(DIRECTION);
 
 /***** global variables *****/
 
 Display *display;
+Window window;
 int screen_num;
 Screen *screen_ptr;
 GC gc;
@@ -40,11 +43,10 @@ unsigned int HEIGHT_MAX_N, WIDTH_MAX_N,
 	HEIGHT_MAX_E, WIDTH_MAX_E;
 
 unsigned int CURRENT_DIRECTION = DEFAULT_DIRECTON;
-unsigned int CURRENT_WIDTH, CURRENT_HEIGHT;
+unsigned int CURRENT_WIDTH, CURRENT_HEIGHT, CURRENT_POSITION_X, CURRENT_POSITION_Y;
 
 
 int main(int argc, char *argv[]) {
-	Window window;
 	XEvent e;
 
 	XSizeHints *size_hints;
@@ -64,7 +66,7 @@ int main(int argc, char *argv[]) {
 	screen_ptr = DefaultScreenOfDisplay(display);
 
 	/***** init defaults *****/
-	init_directions_sizes();
+	init_default_sizes_and_positions();
 	get_default_sizes_for_direction(CURRENT_DIRECTION, &CURRENT_WIDTH, &CURRENT_HEIGHT);
 	/******************************/
 
@@ -119,7 +121,7 @@ int main(int argc, char *argv[]) {
 	exit(1);
 }
 
-void init_directions_sizes() {
+void init_default_sizes_and_positions() {
 	XWindowAttributes xwa;
 	Window root = RootWindow(display, screen_num);
 	if (XGetWindowAttributes(display, root, &xwa) != True) {
@@ -130,6 +132,8 @@ void init_directions_sizes() {
 	HEIGHT_MAX_S = DEFAULT_HEIGHT; WIDTH_MAX_S = xwa.width;
 	HEIGHT_MAX_W = xwa.width; WIDTH_MAX_W = DEFAULT_HEIGHT;
 	HEIGHT_MAX_E = xwa.width; WIDTH_MAX_E = DEFAULT_HEIGHT;
+
+	CURRENT_POSITION_X = DEFAULT_POSITION_X; CURRENT_POSITION_Y = DEFAULT_POSITION_Y;
 }
 
 void get_default_sizes_for_direction(DIRECTION direction, unsigned int *width, unsigned int *height) {
@@ -162,30 +166,50 @@ void on_key_press(XEvent *e) {
 	switch(ks) {
 		/***** move *****/
 		case XK_Up:
+			change_position(DIRECTION_N);
 			break;
 		case XK_Down:
+			change_position(DIRECTION_S);
 			break;
 		case XK_Left:
+			change_position(DIRECTION_W);
 			break;
 		case XK_Right:
+			change_position(DIRECTION_E);
 			break;
+
+
+
 		/***** size ****/
-		/***** short *****/
-		case XK_s:
-		case XK_S:
+		/***** default *****/
+		case XK_0:
+			break;
+		case XK_1:
 			break;
 		/***** medium *****/
-		case XK_m:
-		case XK_M:
+		case XK_2:
 			break;
 		/***** tall *****/
-		case XK_t:
-		case XK_T:
+		case XK_3:
 			break;
 		/***** fullscreen *****/
-		case XK_f:
-		case XK_F:
+		case XK_4:
 			break;
+
+
+
+		/***** direction *****/
+		case XK_n:
+			break;
+		case XK_s:
+			break;
+		case XK_w:
+			break;
+		case XK_e:
+			break;
+
+
+
 		/***** exit *****/
 		case XK_Escape:
 			XFreeGC(display, gc);
@@ -195,4 +219,29 @@ void on_key_press(XEvent *e) {
 		default:
 			break;
 	}
+}
+
+void change_position(DIRECTION direction) {
+	unsigned int change = 1;
+	switch(direction) {
+		case DIRECTION_N:
+			CURRENT_POSITION_Y -= change;
+			break;
+		case DIRECTION_S:
+			CURRENT_POSITION_Y += change;
+			break;
+		case DIRECTION_W:
+			CURRENT_POSITION_X -= change;
+			break;
+		case DIRECTION_E:
+			CURRENT_POSITION_X += change;
+			break;
+		default:
+			break;
+	}
+	XMoveResizeWindow(
+		display, window, 
+		CURRENT_POSITION_X, CURRENT_POSITION_Y, 
+		CURRENT_WIDTH, CURRENT_HEIGHT
+	);
 }
