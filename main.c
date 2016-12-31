@@ -13,7 +13,7 @@ typedef unsigned int SIZE;
 #define SIZE_SMALL (SIZE)250
 #define SIZE_MEDIUM (SIZE)350
 #define SIZE_TALL (SIZE)450
-#define DEFAULT_HEIGHT (SIZE)50
+#define DEFAULT_HEIGHT (SIZE)75
 #define DEFAULT_WIDTH SIZE_SMALL
 
 
@@ -291,6 +291,8 @@ void change_size(SIZE size) {
 		CURRENT_POSITION_X, CURRENT_POSITION_Y, 
 		CURRENT_WIDTH, CURRENT_HEIGHT
 	);
+
+	draw_bg();
 }
 
 void change_direction(DIRECTION direction) {
@@ -300,14 +302,27 @@ void change_direction(DIRECTION direction) {
 }
 
 void draw_bg() {
+	XClearWindow(display, window);
 	unsigned int i;
 	unsigned int line_height_default = 10;
 	unsigned int line_height_medium = 20;
 	unsigned int line_height_big = 30;
 
+	SIZE FINISH = 0;
+	switch (CURRENT_DIRECTION) {
+		case DIRECTION_N:
+		case DIRECTION_S:
+			FINISH = CURRENT_WIDTH;
+			break;
+		case DIRECTION_W:
+		case DIRECTION_E:
+			FINISH = CURRENT_HEIGHT;
+			break;
+	}
+
 
 	unsigned int line_height = line_height_default;
-	for(i = 0; i < CURRENT_WIDTH; i+=2) {
+	for(i = 0; i < FINISH; i+=2) {
 		if ((i % 10) == 0) {
 			line_height = line_height_medium;
 			if ((i % 20) == 0) {
@@ -316,6 +331,19 @@ void draw_bg() {
 		} else {
 			line_height = line_height_default;
 		}
-		XDrawLine(display, window, gc, i, 50, i, 50-line_height);
+		switch(CURRENT_DIRECTION) {
+			case DIRECTION_N:
+				XDrawLine(display, window, gc, i, 0, i, line_height);
+				break;
+			case DIRECTION_S:
+				XDrawLine(display, window, gc, i, DEFAULT_HEIGHT, i, DEFAULT_HEIGHT-line_height);
+				break;
+			case DIRECTION_W:
+				XDrawLine(display, window, gc, 0, i, line_height, i);
+				break;
+			case DIRECTION_E:
+				XDrawLine(display, window, gc, DEFAULT_HEIGHT, i, DEFAULT_HEIGHT-line_height, i);
+				break;
+		}
 	}
 }
