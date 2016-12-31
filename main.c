@@ -35,6 +35,7 @@ void get_default_sizes_for_direction(DIRECTION, unsigned int *, unsigned int *);
 void on_key_press(XEvent *);
 void change_position(DIRECTION);
 void change_size(SIZE);
+void change_direction(DIRECTION);
 
 /***** global variables *****/
 
@@ -170,12 +171,16 @@ void on_key_press(XEvent *e) {
 
 		/***** direction *****/
 		case XK_n:
+			change_direction(DIRECTION_N);
 			break;
 		case XK_s:
+			change_direction(DIRECTION_S);
 			break;
 		case XK_w:
+			change_direction(DIRECTION_W);
 			break;
 		case XK_e:
+			change_direction(DIRECTION_E);
 			break;
 
 
@@ -280,4 +285,10 @@ void change_size(SIZE size) {
 		CURRENT_POSITION_X, CURRENT_POSITION_Y, 
 		CURRENT_WIDTH, CURRENT_HEIGHT
 	);
+}
+
+void change_direction(DIRECTION direction) {
+	CURRENT_DIRECTION = direction;
+	get_default_sizes_for_direction(CURRENT_DIRECTION, &CURRENT_WIDTH, &CURRENT_HEIGHT);
+	change_size(DEFAULT_WIDTH);
 }
