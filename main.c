@@ -24,6 +24,7 @@ typedef unsigned int DIRECTION;
 
 void init_directions_sizes();
 void get_default_sizes_for_direction(DIRECTION, unsigned int *, unsigned int *);
+void on_key_press(XEvent *);
 
 
 /***** global variables *****/
@@ -104,9 +105,7 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 			case KeyPress:
-				XFreeGC(display, gc);
-				XCloseDisplay(display);
-				exit(1);
+				on_key_press(&e);
 				break;
 			case ConfigureNotify:
 				break;
@@ -150,6 +149,48 @@ void get_default_sizes_for_direction(DIRECTION direction, unsigned int *width, u
 		case DIRECTION_E:
 			*width = DEFAULT_HEIGHT;
 			*height = DEFAULT_WIDTH;
+			break;
+		default:
+			break;
+	}
+}
+
+void on_key_press(XEvent *e) {
+	KeySym ks;
+	XComposeStatus xcs;
+	XLookupString(&(e->xkey), NULL, 0, &ks, &xcs);
+	switch(ks) {
+		/***** move *****/
+		case XK_Up:
+			break;
+		case XK_Down:
+			break;
+		case XK_Left:
+			break;
+		case XK_Right:
+			break;
+		/***** size ****/
+		/***** short *****/
+		case XK_s:
+		case XK_S:
+			break;
+		/***** medium *****/
+		case XK_m:
+		case XK_M:
+			break;
+		/***** tall *****/
+		case XK_t:
+		case XK_T:
+			break;
+		/***** fullscreen *****/
+		case XK_f:
+		case XK_F:
+			break;
+		/***** exit *****/
+		case XK_Escape:
+			XFreeGC(display, gc);
+			XCloseDisplay(display);
+			exit(1);
 			break;
 		default:
 			break;
