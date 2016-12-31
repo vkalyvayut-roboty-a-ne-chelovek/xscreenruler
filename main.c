@@ -6,13 +6,39 @@
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
 
+/***** defines *****/
+typedef unsigned int DIRECTION;
+
 #define DEFAULT_HEIGHT 50
 #define DEFAULT_WIDTH 350
+
+#define DIRECTION_N (DIRECTION)1
+#define DIRECTION_S (DIRECTION)2
+#define DIRECTION_W (DIRECTION)3
+#define DIRECTION_E (DIRECTION)4
+
+#define DEFAULT_DIRECTON DIRECTION_N
+
+
+/***** functions *****/
+
+void init_directions_sizes();
+void get_default_sizes_for_direction(DIRECTION, unsigned int *, unsigned int *);
+
+
+/***** global variables *****/
 
 Display *display;
 int screen_num;
 Screen *screen_ptr;
 GC gc;
+
+unsigned int HEIGHT_MAX_N, WIDTH_MAX_N,
+	HEIGHT_MAX_S, WIDTH_MAX_S,
+	HEIGHT_MAX_W, WIDTH_MAX_W,
+	HEIGHT_MAX_E, WIDTH_MAX_E;
+
+unsigned int CURRENT_DIRECTION = DEFAULT_DIRECTON;
 
 
 int main(int argc, char *argv[]) {
@@ -35,13 +61,15 @@ int main(int argc, char *argv[]) {
 	screen_num = DefaultScreen(display);
 	screen_ptr = DefaultScreenOfDisplay(display);
 
-	unsigned int width, height, border_width;
-	width = DEFAULT_WIDTH;
-	height = DEFAULT_HEIGHT;
-	border_width = 0;
+	/***** init default sizes *****/
+	init_directions_sizes();
+	/******************************/
+
+	unsigned int width, height;
+	get_default_sizes_for_direction(CURRENT_DIRECTION, &width, &height);
 
 	window = XCreateSimpleWindow(display, RootWindow(display, screen_num),
-		0, 0, width, height, border_width, BlackPixel(display,
+		0, 0, width, height, 0, BlackPixel(display,
 		screen_num), WhitePixel(display, screen_num));
 
 	/***** GC *****/
@@ -91,4 +119,40 @@ int main(int argc, char *argv[]) {
 	}
 
 	exit(1);
+}
+
+void init_directions_sizes() {
+	XWindowAttributes xwa;
+	Window root = RootWindow(display, screen_num);
+	if (XGetWindowAttributes(display, root, &xwa) != True) {
+		exit(-1);
+	}
+
+	HEIGHT_MAX_N = DEFAULT_HEIGHT; WIDTH_MAX_N = xwa.width;
+	HEIGHT_MAX_S = DEFAULT_HEIGHT; WIDTH_MAX_S = xwa.width;
+	HEIGHT_MAX_W = xwa.width; WIDTH_MAX_W = DEFAULT_HEIGHT;
+	HEIGHT_MAX_E = xwa.width; WIDTH_MAX_E = DEFAULT_HEIGHT;
+}
+
+void get_default_sizes_for_direction(DIRECTION direction, unsigned int *width, unsigned int *height) {
+	switch (direction) {
+		case DIRECTION_N:
+			*width = DEFAULT_WIDTH;
+			*height = DEFAULT_HEIGHT;
+			break;
+		case DIRECTION_S:
+			*width = DEFAULT_WIDTH;
+			*height = DEFAULT_HEIGHT;
+			break;
+		case DIRECTION_W:
+			*width = DEFAULT_HEIGHT;
+			*height = DEFAULT_WIDTH;
+			break;
+		case DIRECTION_E:
+			*width = DEFAULT_HEIGHT;
+			*height = DEFAULT_WIDTH;
+			break;
+		default:
+			break;
+	}
 }
