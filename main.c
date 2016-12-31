@@ -34,7 +34,7 @@ void init_default_sizes_and_positions();
 void get_default_sizes_for_direction(DIRECTION, unsigned int *, unsigned int *);
 void on_key_press(XEvent *);
 void on_mouse_move(XEvent *);
-void change_position(DIRECTION);
+void change_position(DIRECTION, XEvent *);
 void change_size(SIZE);
 void change_direction(DIRECTION);
 void draw_bg();
@@ -163,16 +163,16 @@ void on_key_press(XEvent *e) {
 	switch(ks) {
 		/***** move *****/
 		case XK_Up:
-			change_position(DIRECTION_N);
+			change_position(DIRECTION_N, e);
 			break;
 		case XK_Down:
-			change_position(DIRECTION_S);
+			change_position(DIRECTION_S, e);
 			break;
 		case XK_Left:
-			change_position(DIRECTION_W);
+			change_position(DIRECTION_W, e);
 			break;
 		case XK_Right:
-			change_position(DIRECTION_E);
+			change_position(DIRECTION_E, e);
 			break;
 
 
@@ -296,8 +296,12 @@ void get_default_sizes_for_direction(DIRECTION direction, unsigned int *width, u
 	}
 }
 
-void change_position(DIRECTION direction) {
+void change_position(DIRECTION direction, XEvent *e) {
 	unsigned int change = 1;
+	if (ControlMask == (e->xkey.state & ControlMask)) {
+		change = 10;
+	}
+
 	switch(direction) {
 		case DIRECTION_N:
 			CURRENT_POSITION_Y -= change;
