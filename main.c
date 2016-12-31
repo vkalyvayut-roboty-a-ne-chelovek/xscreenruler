@@ -10,10 +10,10 @@
 typedef unsigned int DIRECTION;
 typedef unsigned int SIZE;
 
-#define SIZE_SMALL (SIZE)350
-#define SIZE_MEDIUM (SIZE)450
-#define SIZE_TALL (SIZE)600
 #define DEFAULT_HEIGHT (SIZE)75
+#define SIZE_SMALL (SIZE)(DEFAULT_HEIGHT * 5)
+#define SIZE_MEDIUM (SIZE)(DEFAULT_HEIGHT * 7)
+#define SIZE_TALL (SIZE)(DEFAULT_HEIGHT * 9)
 #define DEFAULT_WIDTH SIZE_SMALL
 
 
@@ -38,6 +38,7 @@ void change_position(DIRECTION);
 void change_size(SIZE);
 void change_direction(DIRECTION);
 void draw_bg();
+void draw_mouse_position();
 
 /***** global variables *****/
 
@@ -236,7 +237,7 @@ void on_mouse_move(XEvent *e) {
 			CURRENT_MOUSE_POSITION = e->xmotion.y;
 			break;
 	}
-	draw_bg();
+	draw_mouse_position();
 }
 
 void init_default_sizes_and_positions() {
@@ -385,6 +386,10 @@ void draw_bg() {
 		}
 	}
 
+	draw_mouse_position();
+}
+
+void draw_mouse_position() {
 	char *number_formated = (char *)malloc(sizeof(char)*3);
 	sprintf(number_formated, "%03d", CURRENT_MOUSE_POSITION);
 	switch(CURRENT_DIRECTION) {
@@ -401,7 +406,6 @@ void draw_bg() {
 			XDrawImageString(display, window, gc, 5, 15, number_formated, 3);
 			break;
 	}
-
 
 	free(number_formated);
 }
