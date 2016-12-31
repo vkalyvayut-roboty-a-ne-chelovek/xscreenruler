@@ -36,6 +36,7 @@ void on_key_press(XEvent *);
 void change_position(DIRECTION);
 void change_size(SIZE);
 void change_direction(DIRECTION);
+void draw_bg();
 
 /***** global variables *****/
 
@@ -109,6 +110,7 @@ int main(int argc, char *argv[]) {
 				if (e.xexpose.count != 0) {
 					break;
 				}
+				draw_bg();
 				break;
 			case KeyPress:
 				on_key_press(&e);
@@ -295,4 +297,25 @@ void change_direction(DIRECTION direction) {
 	CURRENT_DIRECTION = direction;
 	get_default_sizes_for_direction(CURRENT_DIRECTION, &CURRENT_WIDTH, &CURRENT_HEIGHT);
 	change_size(DEFAULT_WIDTH);
+}
+
+void draw_bg() {
+	unsigned int i;
+	unsigned int line_height_default = 10;
+	unsigned int line_height_medium = 20;
+	unsigned int line_height_big = 30;
+
+
+	unsigned int line_height = line_height_default;
+	for(i = 0; i < CURRENT_WIDTH; i+=2) {
+		if ((i % 10) == 0) {
+			line_height = line_height_medium;
+			if ((i % 20) == 0) {
+				line_height = line_height_big;
+			}
+		} else {
+			line_height = line_height_default;
+		}
+		XDrawLine(display, window, gc, i, 50, i, 50-line_height);
+	}
 }
