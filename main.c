@@ -48,6 +48,7 @@ int screen_num;
 Screen *screen_ptr;
 GC gc;
 Font font;
+XFontStruct *xfs;
 XSizeHints *size_hints;
 XWMHints *wm_hints;
 XClassHint *class_hints;
@@ -90,8 +91,9 @@ int main(int argc, char *argv[]) {
 	gc = XCreateGC(display, window, gc_mask, &gc_values);
 
 	font = XLoadFont(display, "*misc*fixed*");
+	xfs = XQueryFont(display, font);
 	if (! font) { exit(-1); }
-	XSetFont(display, gc, font); 
+	XSetFont(display, gc, font);
 	/**************/
 
 	size_hints->flags = PPosition | PSize | PMinSize | PMaxSize;
@@ -217,7 +219,7 @@ void on_key_press(XEvent *e) {
 			}
 		case XK_Escape:
 			XFreeGC(display, gc);
-			XUnloadFont(display, font);
+			XFreeFont(display, xfs);
 			XCloseDisplay(display);
 			exit(1);
 			break;
@@ -390,20 +392,30 @@ void draw_bg() {
 }
 
 void draw_mouse_position() {
-	char *number_formated = (char *)malloc(sizeof(char)*3);
+	unsigned int chars_in_number = 3;
+	char *number_formated = (char *)malloc(sizeof(char)*chars_in_number);
 	sprintf(number_formated, "%03d", CURRENT_MOUSE_POSITION);
+	SIZE total_width = xfs->max_bounds.width * chars_in_number + xfs->max_bounds.descent;
 	switch(CURRENT_DIRECTION) {
 		case DIRECTION_N:
-			XDrawImageString(display, window, gc, 5, CURRENT_HEIGHT-5, number_formated, 3);
+			XDrawImageString(display, window, gc, 
+				xfs->max_bounds.descent * 2, CURRENT_HEIGHT - xfs->max_bounds.descent * 2, 
+				number_formated, chars_in_number);
 			break;
 		case DIRECTION_S:
-			XDrawImageString(display, window, gc, 5, 15, number_formated, 3);
+			XDrawImageString(display, window, gc, 
+				xfs->max_bounds.descent * 2, xfs->max_bounds.ascent + xfs->max_bounds.descent, 
+				number_formated, chars_in_number);
 			break;
 		case DIRECTION_W:
-			XDrawImageString(display, window, gc, CURRENT_WIDTH-25, 15, number_formated, 3);
+			XDrawImageString(display, window, gc, 
+				CURRENT_WIDTH - total_width, xfs->max_bounds.ascent + xfs->max_bounds.descent, 
+				number_formated, chars_in_number);
 			break;
 		case DIRECTION_E:
-			XDrawImageString(display, window, gc, 5, 15, number_formated, 3);
+			XDrawImageString(display, window, gc, 
+				xfs->max_bounds.descent, xfs->max_bounds.ascent + xfs->max_bounds.descent, 
+				number_formated, chars_in_number);
 			break;
 	}
 
