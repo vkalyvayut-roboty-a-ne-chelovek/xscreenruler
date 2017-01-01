@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -11,10 +12,10 @@ typedef unsigned int DIRECTION;
 typedef unsigned int SIZE;
 
 #define DEFAULT_HEIGHT (SIZE)75
+#define DEFAULT_WIDTH (SIZE)(DEFAULT_HEIGHT * 2)
 #define SIZE_SMALL (SIZE)(DEFAULT_HEIGHT * 5)
 #define SIZE_MEDIUM (SIZE)(DEFAULT_HEIGHT * 7)
 #define SIZE_TALL (SIZE)(DEFAULT_HEIGHT * 9)
-#define DEFAULT_WIDTH SIZE_SMALL
 
 
 
@@ -39,6 +40,7 @@ void change_size(SIZE);
 void change_direction(DIRECTION);
 void draw_bg();
 void draw_mouse_position();
+void usage();
 
 /***** global variables *****/
 
@@ -67,6 +69,13 @@ typedef struct {
 
 
 int main(int argc, char *argv[]) {
+	unsigned int argcounter;
+	for(argcounter = 0; argcounter < argc; argcounter++) {
+		if (strcmp(argv[argcounter], "-h") == 0) {
+			usage();
+		}
+	}
+
 	XEvent e;
 
 	size_hints = XAllocSizeHints();
@@ -474,4 +483,27 @@ void draw_mouse_position() {
 	}
 
 	free(number_formated);
+}
+
+void usage() {
+	char *usage = "\
+DIRECTION: \n\
+ctrl+n - north \n\
+ctrl+s - south \n\
+ctrl+w - west \n\
+ctrl+e - east \n\
+\n\nSIZE\n\
+shift+d - default (%dpx) size \n\
+shift+s - small (%dpx) size \n\
+shift+m - medium (%dpx) size \n\
+shift+t - tall (%dpx) size \n\
+shift+f - fullscreen \n\
+\n\nMOVEMENT\n\
+arrows (up, down, left, right)\n\
+ctrl+arrows - force\n\
+\n\n\
+ESC or ctrl+q - exit\n\
+";
+	fprintf(stdout, usage, DEFAULT_WIDTH, SIZE_SMALL, SIZE_MEDIUM, SIZE_TALL);
+	exit(1);
 }
