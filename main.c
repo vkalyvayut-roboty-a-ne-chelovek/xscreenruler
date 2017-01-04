@@ -40,7 +40,8 @@ void change_size(SIZE);
 void change_direction(DIRECTION);
 void draw_bg();
 void draw_mouse_position();
-void usage();
+void usage(int, char **);
+void users_colors(int, char **);
 
 /***** global variables *****/
 
@@ -66,16 +67,11 @@ typedef struct {
     unsigned long   decorations;
 } Hints; /*****  достаточно и 3 свойств *****/
 
-
+unsigned long pixel_color_1, pixel_color_2;
 
 int main(int argc, char *argv[]) {
-	unsigned int argcounter;
-	for(argcounter = 0; argcounter < argc; argcounter++) {
-		if (strcmp(argv[argcounter], "-h") == 0) {
-			usage();
-		}
-	}
-
+	usage(argc, argv);
+	
 	XEvent e;
 
 	size_hints = XAllocSizeHints();
@@ -95,9 +91,13 @@ int main(int argc, char *argv[]) {
 	get_default_sizes_for_direction(CURRENT_DIRECTION, &CURRENT_WIDTH, &CURRENT_HEIGHT);
 	/******************************/
 
+	pixel_color_1 = WhitePixel(display, screen_num);
+	pixel_color_2 = BlackPixel(display, screen_num);
+
+	users_colors(argc, argv);
+
 	window = XCreateSimpleWindow(display, RootWindow(display, screen_num),
-		0, 0, CURRENT_WIDTH, CURRENT_HEIGHT, 0, BlackPixel(display,
-		screen_num), WhitePixel(display, screen_num));
+		0, 0, CURRENT_WIDTH, CURRENT_HEIGHT, 0, pixel_color_2, pixel_color_1);
 
 	/***** window decorations *****/
 	/***** based on http://tonyobryan.com/index.php?article=9 *****/
@@ -114,8 +114,8 @@ int main(int argc, char *argv[]) {
 	/***** GC *****/
 	XGCValues gc_values;
 	unsigned long gc_mask = GCBackground | GCForeground;
-	gc_values.background = WhitePixel(display, screen_num);
-	gc_values.foreground = BlackPixel(display, screen_num);
+	gc_values.background = pixel_color_1;
+	gc_values.foreground = pixel_color_2;
 	gc = XCreateGC(display, window, gc_mask, &gc_values);
 
 	font = XLoadFont(display, "*misc*fixed*");
@@ -485,8 +485,20 @@ void draw_mouse_position() {
 	free(number_formated);
 }
 
-void usage() {
-	char *usage = "\
+void usage(int argc, char **argv) {
+	unsigned int argcounter;
+	unsigned int show_usage = False;
+	for(argcounter = 0; argcounter < argc; argcounter++) {
+		if (strcmp(argv[argcounter], "-h") == 0) {
+			show_usage = True;
+		}
+	}
+
+	if (show_usage != True) { return; }
+	char *usage = "xscreenruler [-h|-fg <color-name-or-hex-code>|-bg <color-name-or-hex-code>] \n\n\
+-h - this message \n\
+-fg <color-name-or-hex-code> - set foreground (i.e. text) color. Examples: red, green, blue, 0xfff, 0xFFFF00, etc. \n\
+-bg <color-name-or-hex-code> - set background color. Same format as for foreground \n\n\n\
 DIRECTION: \n\
 ctrl+n - north \n\
 ctrl+s - south \n\
@@ -506,4 +518,39 @@ ESC or ctrl+q - exit\n\
 ";
 	fprintf(stdout, usage, DEFAULT_WIDTH, SIZE_SMALL, SIZE_MEDIUM, SIZE_TALL);
 	exit(1);
+}
+
+void users_colors(int argc, char **argv) {
+	unsigned int argcounter;
+	for(argcounter = 0; argcounter < argc; argcounter++) {
+		if (strcmp(argv[argcounter], "-fg") == 0) {
+			if (argc >= (argcounter+2)) {
+				XColor fg;
+				if (XParseColor(display, DefaultColormap(display, screen_num), argv[argcounter+1], &fg) != True) {
+					fprintf(stderr, "Error: XParseColor(%s) Back on default\n", argv[argcounter+1]);
+					return;
+				}
+				if (XAllocColor(display, DefaultColormap(display, screen_num), &fg) != True) {
+					fprintf(stderr, "Error: XQueryColor(%s). Back on default\n", argv[argcounter+1]);
+					return;
+				}
+				pixel_color_2 = fg.pixel;
+			}
+		}
+
+		if (strcmp(argv[argcounter], "-bg") == 0) {
+			if (argc >= (argcounter+2)) {
+				XColor bg;
+				if (XParseColor(display, DefaultColormap(display, screen_num), argv[argcounter+1], &bg) != True) {
+					fprintf(stderr, "Error: XParseColor(%s) Back on default\n", argv[argcounter+1]);
+					return;
+				}
+				if (XAllocColor(display, DefaultColormap(display, screen_num), &bg) != True) {
+					fprintf(stderr, "Error: XQueryColor(%s) Back on default\n", argv[argcounter+1]);
+					return;
+				}
+				pixel_color_1 = bg.pixel;
+			}
+		}
+	}
 }
