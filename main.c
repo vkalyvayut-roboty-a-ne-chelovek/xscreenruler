@@ -37,6 +37,7 @@ void on_key_press(XEvent *);
 void on_mouse_move(XEvent *);
 void change_position(DIRECTION, XEvent *);
 void change_size(SIZE);
+void update_position_and_size();
 void change_direction(DIRECTION);
 void draw_bg();
 void draw_mouse_position();
@@ -59,7 +60,7 @@ XClassHint *class_hints;
 SIZE SIZE_FULLSCREEN;
 
 unsigned int CURRENT_DIRECTION = DEFAULT_DIRECTON;
-unsigned int CURRENT_WIDTH, CURRENT_HEIGHT, CURRENT_POSITION_X, CURRENT_POSITION_Y, CURRENT_MOUSE_POSITION;
+SIZE CURRENT_WIDTH, CURRENT_HEIGHT, CURRENT_POSITION_X, CURRENT_POSITION_Y, CURRENT_MOUSE_POSITION, MOUSE_POSITION_PREV_X, MOUSE_POSITION_PREV_Y;
 
 typedef struct {
     unsigned long   flags;
@@ -136,7 +137,7 @@ int main(int argc, char *argv[]) {
 	wm_hints->flags = StateHint | InputHint;
 
 	XSetWMProperties(display, window, NULL, NULL, argv, argc, size_hints, wm_hints, class_hints);
-	XSelectInput(display, window, ExposureMask | KeyPressMask | StructureNotifyMask | PointerMotionMask);
+	XSelectInput(display, window, ExposureMask | KeyPressMask | StructureNotifyMask | PointerMotionMask | Button1MotionMask);
 
 	XMapWindow(display, window);
 
@@ -155,6 +156,12 @@ int main(int argc, char *argv[]) {
 			case ConfigureNotify:
 				break;
 			case MotionNotify:
+				if ((e.xmotion.state & Button1MotionMask) == Button1MotionMask ) {
+					CURRENT_POSITION_X += (e.xmotion.x - MOUSE_POSITION_PREV_X);
+					CURRENT_POSITION_Y += (e.xmotion.y - MOUSE_POSITION_PREV_Y);
+					update_position_and_size();
+					break;
+				}
 				on_mouse_move(&e);
 				break;
 			default:
@@ -257,6 +264,8 @@ void on_key_press(XEvent *e) {
 }
 
 void on_mouse_move(XEvent *e) {
+	MOUSE_POSITION_PREV_X = e->xmotion.x;
+	MOUSE_POSITION_PREV_Y = e->xmotion.y;
 	switch (CURRENT_DIRECTION) {
 		case DIRECTION_N:
 		case DIRECTION_S:
@@ -305,6 +314,14 @@ void get_default_sizes_for_direction(DIRECTION direction, unsigned int *width, u
 	}
 }
 
+void update_position_and_size() {
+	XMoveResizeWindow(
+		display, window, 
+		CURRENT_POSITION_X, CURRENT_POSITION_Y, 
+		CURRENT_WIDTH, CURRENT_HEIGHT
+	);
+}
+
 void change_position(DIRECTION direction, XEvent *e) {
 	unsigned int change = 1;
 	if (ControlMask == (e->xkey.state & ControlMask)) {
@@ -327,11 +344,8 @@ void change_position(DIRECTION direction, XEvent *e) {
 		default:
 			break;
 	}
-	XMoveResizeWindow(
-		display, window, 
-		CURRENT_POSITION_X, CURRENT_POSITION_Y, 
-		CURRENT_WIDTH, CURRENT_HEIGHT
-	);
+
+	update_position_and_size();
 }
 
 void change_size(SIZE size) {
@@ -359,14 +373,11 @@ void change_size(SIZE size) {
 	size_hints->max_height = CURRENT_HEIGHT;
 	XSetWMProperties(display, window, NULL, NULL, NULL, 0, size_hints, wm_hints, class_hints);
 
-	XMoveResizeWindow(
-		display, window, 
-		CURRENT_POSITION_X, CURRENT_POSITION_Y, 
-		CURRENT_WIDTH, CURRENT_HEIGHT
-	);
+	update_position_and_size();
 
 	draw_bg();
 }
+
 
 void change_direction(DIRECTION direction) {
 	CURRENT_DIRECTION = direction;
