@@ -506,7 +506,7 @@ void usage(int argc, char **argv) {
 	}
 
 	if (show_usage != True) { return; }
-	char *usage = "xscreenruler [-h|-fg <color-name-or-hex-code>|-bg <color-name-or-hex-code>] \n\n\
+	char *usage = "%s [-h|-fg <color-name-or-hex-code>|-bg <color-name-or-hex-code>] \n\n\
 -h - this message \n\
 -fg <color-name-or-hex-code> - set foreground (i.e. text) color. Examples: red, green, blue, 0xfff, 0xFFFF00, etc. \n\
 -bg <color-name-or-hex-code> - set background color. Same format as for foreground \n\n\n\
@@ -527,7 +527,7 @@ ctrl+arrows - force\n\
 \n\n\
 ESC or ctrl+q - exit\n\
 ";
-	fprintf(stdout, usage, DEFAULT_WIDTH, SIZE_SMALL, SIZE_MEDIUM, SIZE_TALL);
+	fprintf(stdout, usage, argv[0], DEFAULT_WIDTH, SIZE_SMALL, SIZE_MEDIUM, SIZE_TALL);
 	exit(1);
 }
 
