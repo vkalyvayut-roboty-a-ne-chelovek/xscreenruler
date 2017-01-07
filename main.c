@@ -508,7 +508,7 @@ void usage(int argc, char **argv) {
 	if (show_usage != True) { return; }
 	char *usage = "%s [-h|-fg <color-name-or-hex-code>|-bg <color-name-or-hex-code>] \n\n\
 -h - this message \n\
--fg <color-name-or-hex-code> - set foreground (i.e. text) color. Examples: red, green, blue, 0xfff, 0xFFFF00, etc. \n\
+-fg <color-name-or-hex-code> - set foreground (i.e. text) color. Examples: red, green, blue, yellow, etc. \n\
 -bg <color-name-or-hex-code> - set background color. Same format as for foreground \n\n\n\
 DIRECTION: \n\
 ctrl+n - north \n\
@@ -537,11 +537,11 @@ void users_colors(int argc, char **argv) {
 		if (strcmp(argv[argcounter], "-fg") == 0) {
 			if (argc >= (argcounter+2)) {
 				XColor fg;
-				if (XParseColor(display, DefaultColormap(display, screen_num), argv[argcounter+1], &fg) != True) {
+				if (!XParseColor(display, DefaultColormap(display, screen_num), argv[argcounter+1], &fg)) {
 					fprintf(stderr, "Error: XParseColor(%s) Back on default\n", argv[argcounter+1]);
 					return;
 				}
-				if (XAllocColor(display, DefaultColormap(display, screen_num), &fg) != True) {
+				if (!XAllocColor(display, DefaultColormap(display, screen_num), &fg)) {
 					fprintf(stderr, "Error: XQueryColor(%s). Back on default\n", argv[argcounter+1]);
 					return;
 				}
