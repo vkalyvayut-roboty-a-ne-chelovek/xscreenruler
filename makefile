@@ -1,4 +1,4 @@
-all: main.c -lX11
+all: main.c
 	gcc -Wall -o xscreenruler main.c -lX11
 
 .PHONY: clean
