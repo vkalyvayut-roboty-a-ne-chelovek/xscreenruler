@@ -1,5 +1,6 @@
 all: main.c
-	gcc -Wall -o xscreenruler main.c -lX11
+	${CC} ${CPPFLAGS} ${CFLAGS} ${LDFLAGS} -Wall \
+		-o xscreenruler main.c -lX11
 
 .PHONY: clean
 clean:
