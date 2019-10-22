@@ -1,6 +1,20 @@
 # xscreenruler
 Simple screen ruler for x11. Only xlib in dependencies!
 
+## BUILDING
+
+To build, use `make`. GNU make and BSD make have been tested.
+
+The build honours the standard variables. On some platforms you will have to
+pass extra include and library directories. For example on OpenBSD, you would
+do:
+
+```
+CPPFLAGS=-I/usr/X11R6/include LDFLAGS=-L/usr/X11R6/lib make
+```
+
+## USAGE
+
 ```
 xscreenruler [-h|-fg <color-name-or-hex-code>|-bg <color-name-or-hex-code>]
 -h - this message
