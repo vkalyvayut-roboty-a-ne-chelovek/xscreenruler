@@ -15,6 +15,7 @@ CPPFLAGS=-I/usr/X11R6/include LDFLAGS=-L/usr/X11R6/lib make
 
 ## USAGE
 
+Invoke `xscreenruler` like so:
 ```
 xscreenruler [-h|-fg <color-name-or-hex-code>|-bg <color-name-or-hex-code>]
 -h - this message
@@ -22,7 +23,9 @@ xscreenruler [-h|-fg <color-name-or-hex-code>|-bg <color-name-or-hex-code>]
 -bg <color-name-or-hex-code> - set background color. Same format as for foreground
 ```
 
-## DIRECTION
+## KEY BINDINGS
+
+To change the measurement edge:
 ```
 shift+n - north
 shift+s - south
@@ -30,7 +33,7 @@ shift+w - west
 shift+e - east
 ```
 
-## SIZE
+To change the size:
 ```
 ctrl+d - default size
 ctrl+s - small size
@@ -39,14 +42,15 @@ ctrl+t - tall size
 ctrl+f - fullscreen
 ```
 
-## MOVEMENT
+To move the ruler, either use your window manager, or:
 ```
 arrows (up, down, left, right)
-ctrl+arrows - force
-
-
-ESC or ctrl+q - exit
+ctrl+arrows - move faster
 ```
+
+To quit, press `ESC` or `ctrl+q`.
+
+## SCREENSHOTS
 
 ![xscreenruler.png](https://github.com/6d7367/xscreenruler/blob/master/xscreenruler.png)
 ![xscreenruler.png](https://raw.githubusercontent.com/6d7367/xscreenruler/master/xscreenruler%20-fg%20white%20-bg%20black.png)
