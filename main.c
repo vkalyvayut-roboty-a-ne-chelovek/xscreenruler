@@ -511,16 +511,16 @@ void usage(int argc, char **argv) {
 -fg <color-name-or-hex-code> - set foreground (i.e. text) color. Examples: red, green, blue, yellow, etc. \n\
 -bg <color-name-or-hex-code> - set background color. Same format as for foreground \n\n\n\
 DIRECTION: \n\
-ctrl+n - north \n\
-ctrl+s - south \n\
-ctrl+w - west \n\
-ctrl+e - east \n\
+shift+n - north \n\
+shift+s - south \n\
+shift+w - west \n\
+shift+e - east \n\
 \n\nSIZE\n\
-shift+d - default (%dpx) size \n\
-shift+s - small (%dpx) size \n\
-shift+m - medium (%dpx) size \n\
-shift+t - tall (%dpx) size \n\
-shift+f - fullscreen \n\
+ctrl+d - default (%dpx) size \n\
+ctrl+s - small (%dpx) size \n\
+ctrl+m - medium (%dpx) size \n\
+ctrl+t - tall (%dpx) size \n\
+ctrl+f - fullscreen \n\
 \n\nMOVEMENT\n\
 arrows (up, down, left, right)\n\
 ctrl+arrows - force\n\

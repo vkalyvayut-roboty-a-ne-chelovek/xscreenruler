@@ -10,19 +10,19 @@ xscreenruler [-h|-fg <color-name-or-hex-code>|-bg <color-name-or-hex-code>]
 
 ## DIRECTION
 ```
-ctrl+n - north
-ctrl+s - south
-ctrl+w - west
-ctrl+e - east
+shift+n - north
+shift+s - south
+shift+w - west
+shift+e - east
 ```
 
 ## SIZE
 ```
-shift+d - default size
-shift+s - small size
-shift+m - medium size
-shift+t - tall size
-shift+f - fullscreen
+ctrl+d - default size
+ctrl+s - small size
+ctrl+m - medium size
+ctrl+t - tall size
+ctrl+f - fullscreen
 ```
 
 ## MOVEMENT
