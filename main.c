@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <err.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -82,7 +83,10 @@ int main(int argc, char *argv[]) {
 	if ((!size_hints) || (!wm_hints) || (!class_hints)) { exit(-1); }
 
 	display = XOpenDisplay(NULL);
-	if (display == NULL) { exit(-1); }
+	if (display == NULL) {
+		errx(1, "can't open display");
+		exit(-1);
+	}
 
 	screen_num = DefaultScreen(display);
 	screen_ptr = DefaultScreenOfDisplay(display);
