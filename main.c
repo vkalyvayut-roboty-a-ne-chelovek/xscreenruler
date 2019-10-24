@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <err.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -82,7 +83,10 @@ int main(int argc, char *argv[]) {
 	if ((!size_hints) || (!wm_hints) || (!class_hints)) { exit(-1); }
 
 	display = XOpenDisplay(NULL);
-	if (display == NULL) { exit(-1); }
+	if (display == NULL) {
+		errx(1, "can't open display");
+		exit(-1);
+	}
 
 	screen_num = DefaultScreen(display);
 	screen_ptr = DefaultScreenOfDisplay(display);
@@ -506,27 +510,38 @@ void usage(int argc, char **argv) {
 	}
 
 	if (show_usage != True) { return; }
-	char *usage = "%s [-h|-fg <color-name-or-hex-code>|-bg <color-name-or-hex-code>] \n\n\
--h - this message \n\
--fg <color-name-or-hex-code> - set foreground (i.e. text) color. Examples: red, green, blue, yellow, etc. \n\
--bg <color-name-or-hex-code> - set background color. Same format as for foreground \n\n\n\
-DIRECTION: \n\
-shift+n - north \n\
-shift+s - south \n\
-shift+w - west \n\
-shift+e - east \n\
-\n\nSIZE\n\
-ctrl+d - default (%dpx) size \n\
-ctrl+s - small (%dpx) size \n\
-ctrl+m - medium (%dpx) size \n\
-ctrl+t - tall (%dpx) size \n\
-ctrl+f - fullscreen \n\
-\n\nMOVEMENT\n\
-arrows (up, down, left, right)\n\
-ctrl+arrows - force\n\
-\n\n\
-ESC or ctrl+q - exit\n\
-";
+	char *usage = \
+	    "%s [-h] [-fg <color>] [-bg <color>]\n"
+	    "\n"
+	    "  -h - this message\n"
+	    "  -fg <color> - set foreground (i.e. text) color.\n"
+	    "  -bg <color> - set background color.\n"
+	    "\n"
+            "  Where <color> is either:\n"
+	    "    An X11 color name (e.g. 'red').\n"
+	    "    A hex colour code (e.g. '#ff0000')\n"
+	    "\n"
+	    "Keybindings:\n"
+	    "  Measurement edge:\n"
+	    "    shift+n - north\n"
+	    "    shift+s - south\n"
+	    "    shift+w - west\n"
+	    "    shift+e - east\n"
+	    "\n"
+	    "  Ruler size:\n"
+	    "    ctrl+d - default (%dpx) size\n"
+	    "    ctrl+s - small (%dpx) size\n"
+	    "    ctrl+m - medium (%dpx) size\n"
+	    "    ctrl+t - tall (%dpx) size\n"
+	    "    ctrl+f - fullscreen\n"
+	    "\n"
+	    "  Movement\n"
+	    "    arrows (up, down, left, right)\n"
+	    "    ctrl+arrows - move faster\n"
+	    "\n"
+	    "  Misc:\n"
+	    "    ESC or ctrl+q - exit\n\n";
+
 	fprintf(stdout, usage, argv[0], DEFAULT_WIDTH, SIZE_SMALL, SIZE_MEDIUM, SIZE_TALL);
 	exit(1);
 }

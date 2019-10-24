@@ -15,40 +15,39 @@ CPPFLAGS=-I/usr/X11R6/include LDFLAGS=-L/usr/X11R6/lib make
 
 ## USAGE
 
-Invoke `xscreenruler` like so:
 ```
-xscreenruler [-h|-fg <color-name-or-hex-code>|-bg <color-name-or-hex-code>]
--h - this message
--fg <color-name-or-hex-code> - set foreground (i.e. text) color. Examples: red, green, blue, yellow, etc.
--bg <color-name-or-hex-code> - set background color. Same format as for foreground
-```
+./xscreenruler [-h] [-fg <color>] [-bg <color>]
 
-## KEY BINDINGS
+  -h - this message
+  -fg <color> - set foreground (i.e. text) color.
+  -bg <color> - set background color.
 
-To change the measurement edge:
-```
-shift+n - north
-shift+s - south
-shift+w - west
-shift+e - east
-```
+  Where <color> is either:
+    An X11 color name (e.g. 'red').
+    A hex colour code (e.g. '#ff0000')
 
-To change the size:
-```
-ctrl+d - default size
-ctrl+s - small size
-ctrl+m - medium size
-ctrl+t - tall size
-ctrl+f - fullscreen
-```
+Keybindings:
+  Measurement edge:
+    shift+n - north
+    shift+s - south
+    shift+w - west
+    shift+e - east
 
-To move the ruler, either use your window manager, or:
-```
-arrows (up, down, left, right)
-ctrl+arrows - move faster
-```
+  Ruler size:
+    ctrl+d - default (150px) size
+    ctrl+s - small (375px) size
+    ctrl+m - medium (525px) size
+    ctrl+t - tall (675px) size
+    ctrl+f - fullscreen
 
-To quit, press `ESC` or `ctrl+q`.
+  Movement
+    arrows (up, down, left, right)
+    ctrl+arrows - move faster
+
+  Misc:
+    ESC or ctrl+q - exit
+
+```
 
 ## SCREENSHOTS
 
