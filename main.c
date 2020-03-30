@@ -30,6 +30,7 @@ typedef unsigned int SIZE;
 #define DEFAULT_POSITION_X (SIZE)50
 #define DEFAULT_POSITION_Y (SIZE)50
 
+
 /***** functions *****/
 
 void init_default_sizes_and_positions();
@@ -40,8 +41,12 @@ void change_position(DIRECTION, XEvent *);
 void change_size(SIZE);
 void update_position_and_size();
 void change_direction(DIRECTION);
+
 void draw_bg();
 void draw_mouse_position();
+void draw_mouse_position_marker();
+void draw_bg_and_mouse_position();
+
 void usage(int, char **);
 void users_colors(int, char **);
 
@@ -152,7 +157,7 @@ int main(int argc, char *argv[]) {
 				if (e.xexpose.count != 0) {
 					break;
 				}
-				draw_bg();
+				draw_bg_and_mouse_position();
 				break;
 			case KeyPress:
 				on_key_press(&e);
@@ -280,7 +285,7 @@ void on_mouse_move(XEvent *e) {
 			CURRENT_MOUSE_POSITION = e->xmotion.y;
 			break;
 	}
-	draw_mouse_position();
+	draw_bg_and_mouse_position();
 }
 
 void init_default_sizes_and_positions() {
@@ -379,7 +384,7 @@ void change_size(SIZE size) {
 
 	update_position_and_size();
 
-	draw_bg();
+	draw_bg_and_mouse_position();
 }
 
 
@@ -465,8 +470,6 @@ void draw_bg() {
 	}
 
 	free(number_formated);
-
-	draw_mouse_position();
 }
 
 void draw_mouse_position() {
@@ -474,6 +477,7 @@ void draw_mouse_position() {
 	char *number_formated = (char *)malloc(sizeof(char)*chars_in_number);
 	sprintf(number_formated, "%04d", CURRENT_MOUSE_POSITION);
 	SIZE total_width = xfs->max_bounds.width * chars_in_number + xfs->max_bounds.descent;
+
 	switch(CURRENT_DIRECTION) {
 		case DIRECTION_N:
 			XDrawImageString(display, window, gc, 
@@ -498,6 +502,56 @@ void draw_mouse_position() {
 	}
 
 	free(number_formated);
+}
+
+void draw_mouse_position_marker() {
+	SIZE mouse_marker_position_x1,
+		mouse_marker_position_y1,
+		mouse_marker_position_x2,
+		mouse_marker_position_y2,
+		marker_size,
+		mouse_position_for_size_marker;
+
+	marker_size = DEFAULT_POSITION_X * 2;
+
+	mouse_position_for_size_marker = CURRENT_MOUSE_POSITION;
+
+	switch(CURRENT_DIRECTION) {
+		case DIRECTION_N:
+		case DIRECTION_S:
+			if (mouse_position_for_size_marker > 0) {
+				mouse_position_for_size_marker -= 1;
+			}
+
+			mouse_marker_position_x1 = mouse_position_for_size_marker;
+			mouse_marker_position_y1 = 0;
+			mouse_marker_position_x2 = mouse_position_for_size_marker;
+			mouse_marker_position_y2 = marker_size;
+
+			break;
+		case DIRECTION_W:
+		case DIRECTION_E:
+			if (mouse_position_for_size_marker > 0) {
+				mouse_position_for_size_marker -= 2;
+			}
+
+			mouse_marker_position_x1 = 0;
+			mouse_marker_position_y1 = mouse_position_for_size_marker;
+			mouse_marker_position_x2 = marker_size;
+			mouse_marker_position_y2 = mouse_position_for_size_marker;
+
+			break;
+	}
+
+	XDrawLine(display, window, gc, 
+				mouse_marker_position_x1, mouse_marker_position_y1, 
+				mouse_marker_position_x2, mouse_marker_position_y2);
+}
+
+void draw_bg_and_mouse_position() {
+	draw_bg();
+	draw_mouse_position();
+	draw_mouse_position_marker();
 }
 
 void usage(int argc, char **argv) {
