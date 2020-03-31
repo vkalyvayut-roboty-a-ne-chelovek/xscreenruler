@@ -47,6 +47,8 @@ void change_direction(DIRECTION);
 void flip_flow();
 
 void draw_bg();
+void _draw_bg_measurement_number(unsigned int, unsigned int, SIZE, unsigned int, char *, unsigned int *, unsigned int *, unsigned int *, unsigned int *);
+
 void draw_mouse_position();
 void draw_mouse_position_marker();
 void draw_bg_and_mouse_position();
@@ -417,20 +419,21 @@ void flip_flow() {
 
 void draw_bg() {
 	XClearWindow(display, window);
-	unsigned int i;
+	unsigned int i, step_i, start_i, finish_i;
 	unsigned int line_height_default = 10;
 	unsigned int line_height_medium = 20;
 	unsigned int line_height_big = 30;
 
-	SIZE FINISH = 0;
+	start_i = 0;
+	step_i = 1;
 	switch (CURRENT_DIRECTION) {
 		case DIRECTION_N:
 		case DIRECTION_S:
-			FINISH = CURRENT_WIDTH;
+			finish_i = CURRENT_WIDTH + step_i;
 			break;
 		case DIRECTION_W:
 		case DIRECTION_E:
-			FINISH = CURRENT_HEIGHT;
+			finish_i = CURRENT_HEIGHT + step_i;
 			break;
 	}
 
@@ -440,7 +443,7 @@ void draw_bg() {
 
 	unsigned int x1, x2, y1, y2;
 	unsigned int line_height = line_height_default;
-	for(i = 0; i < FINISH; i+=2) {
+	for(i = start_i; i < finish_i; i+=step_i) {
 		if ((i % 10) == 0) {
 			line_height = line_height_medium;
 			if ((i % 50) == 0) {
@@ -449,48 +452,48 @@ void draw_bg() {
 		} else {
 			line_height = line_height_default;
 		}
-		switch(CURRENT_DIRECTION) {
-			case DIRECTION_N:
-				x1 = i-1; y1 = 0; x2 = i-1; y2 = line_height;
-				if ((i != 0) && ((i % 50) == 0)) {
-					sprintf(number_formated, "%04d", i);
-					XDrawImageString(display, window, gc, 
-						i - total_width / 2, line_height + xfs->max_bounds.ascent * 2, 
-						number_formated, chars_in_number);
-				}
-				break;
-			case DIRECTION_S:
-				x1 = i-1; y1 = DEFAULT_HEIGHT; x2 = i-1; y2 = DEFAULT_HEIGHT-line_height;
-				if ((i != 0) && ((i % 50) == 0)) {
-					sprintf(number_formated, "%04d", i);
-					XDrawImageString(display, window, gc, 
-						i - total_width / 2, line_height + xfs->max_bounds.ascent, 
-						number_formated, chars_in_number);
-				}
-				break;
-			case DIRECTION_W:
-				x1 = 0; y1 = i-2; x2 = line_height; y2 = i-2;
-				if ((i != 0) && ((i % 50) == 0)) {
-					sprintf(number_formated, "%04d", i);
-					XDrawImageString(display, window, gc, 
-						DEFAULT_HEIGHT - total_width, i + xfs->max_bounds.descent + 1, 
-						number_formated, chars_in_number);
-				}
-				break;
-			case DIRECTION_E:
-				x1 = DEFAULT_HEIGHT; y1 = i-2; x2 = DEFAULT_HEIGHT-line_height; y2 = i-2;
-				if ((i != 0) && ((i % 50) == 0)) {
-					sprintf(number_formated, "%04d", i);
-					XDrawImageString(display, window, gc, 
-						xfs->max_bounds.width, i + xfs->max_bounds.descent + 1, 
-						number_formated, chars_in_number);
-				}
-				break;
+
+		_draw_bg_measurement_number(i, chars_in_number, total_width, line_height, number_formated, &x1, &y1, &x2, &y2);
+		
+		if (i % 2 == 0) {
+			XDrawLine(display, window, gc, x1, y1, x2, y2);
 		}
-		XDrawLine(display, window, gc, x1, y1, x2, y2);
 	}
 
 	free(number_formated);
+}
+
+void _draw_bg_measurement_number(unsigned int i, unsigned int chars_in_number, SIZE total_width, unsigned int line_height, char *number_formated, unsigned int *x1, unsigned int *y1, unsigned int *x2, unsigned int *y2) {
+	sprintf(number_formated, "%04d", i);
+	unsigned int number_formated_position_x, number_formated_position_y;
+	switch(CURRENT_DIRECTION) {
+		case DIRECTION_N:
+			*x1 = i-1; *y1 = 0; *x2 = i-1; *y2 = line_height;
+			number_formated_position_x = i - total_width / 2;
+			number_formated_position_y = line_height + xfs->max_bounds.ascent * 2;
+			break;
+		case DIRECTION_S:
+			*x1 = i-1; *y1 = DEFAULT_HEIGHT; *x2 = i-1; *y2 = DEFAULT_HEIGHT-line_height;
+			number_formated_position_x = i - total_width / 2;
+			number_formated_position_y = line_height + xfs->max_bounds.ascent;
+			break;
+		case DIRECTION_W:
+			*x1 = 0; *y1 = i-2; *x2 = line_height; *y2 = i-2;
+			number_formated_position_x = DEFAULT_HEIGHT - total_width;
+			number_formated_position_y = i + xfs->max_bounds.descent + 1;
+			break;
+		case DIRECTION_E:
+			*x1 = DEFAULT_HEIGHT; *y1 = i-2; *x2 = DEFAULT_HEIGHT-line_height; *y2 = i-2;
+			number_formated_position_x = xfs->max_bounds.width;
+			number_formated_position_y = i + xfs->max_bounds.descent + 1;
+			break;
+	}
+
+	if ((i != 0) && ((i % 50) == 0)) {
+		XDrawImageString(display, window, gc, 
+			number_formated_position_x, number_formated_position_y, 
+			number_formated, chars_in_number);
+	}
 }
 
 void draw_mouse_position() {
