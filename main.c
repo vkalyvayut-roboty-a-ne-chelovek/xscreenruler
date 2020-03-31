@@ -30,6 +30,9 @@ typedef unsigned int SIZE;
 #define DEFAULT_POSITION_X (SIZE)50
 #define DEFAULT_POSITION_Y (SIZE)50
 
+#define MEASURE_FLOW_NORMAL 1
+#define MEASURE_FLOW_INVERTED 2
+
 
 /***** functions *****/
 
@@ -41,6 +44,7 @@ void change_position(DIRECTION, XEvent *);
 void change_size(SIZE);
 void update_position_and_size();
 void change_direction(DIRECTION);
+void flip_flow();
 
 void draw_bg();
 void draw_mouse_position();
@@ -67,6 +71,8 @@ SIZE SIZE_FULLSCREEN;
 
 unsigned int CURRENT_DIRECTION = DEFAULT_DIRECTON;
 SIZE CURRENT_WIDTH, CURRENT_HEIGHT, CURRENT_POSITION_X, CURRENT_POSITION_Y, CURRENT_MOUSE_POSITION, MOUSE_POSITION_PREV_X, MOUSE_POSITION_PREV_Y;
+
+DIRECTION CURRENT_MEASURE_FLOW;
 
 typedef struct {
     unsigned long   flags;
@@ -254,7 +260,9 @@ void on_key_press(XEvent *e) {
 			change_direction(DIRECTION_E);
 			break;
 
-
+		case XK_R:
+			flip_flow();
+			break;
 
 		/***** exit *****/
 		case XK_q:
@@ -298,6 +306,7 @@ void init_default_sizes_and_positions() {
 	SIZE_FULLSCREEN = xwa.width;
 	CURRENT_POSITION_X = DEFAULT_POSITION_X; CURRENT_POSITION_Y = DEFAULT_POSITION_Y;
 	CURRENT_MOUSE_POSITION = 0;
+	CURRENT_MEASURE_FLOW = MEASURE_FLOW_INVERTED;
 }
 
 void get_default_sizes_for_direction(DIRECTION direction, unsigned int *width, unsigned int *height) {
@@ -387,11 +396,23 @@ void change_size(SIZE size) {
 	draw_bg_and_mouse_position();
 }
 
-
 void change_direction(DIRECTION direction) {
 	CURRENT_DIRECTION = direction;
 	get_default_sizes_for_direction(CURRENT_DIRECTION, &CURRENT_WIDTH, &CURRENT_HEIGHT);
 	change_size(DEFAULT_WIDTH);
+}
+
+void flip_flow() {
+	switch (CURRENT_MEASURE_FLOW) {
+		case MEASURE_FLOW_NORMAL:
+			CURRENT_MEASURE_FLOW = MEASURE_FLOW_INVERTED;
+			break;
+		case MEASURE_FLOW_INVERTED:
+			CURRENT_MEASURE_FLOW = MEASURE_FLOW_NORMAL;
+			break;
+	}
+
+	draw_bg_and_mouse_position();
 }
 
 void draw_bg() {
@@ -474,32 +495,60 @@ void draw_bg() {
 
 void draw_mouse_position() {
 	unsigned int chars_in_number = 4;
+
+	SIZE mouse_position_for_print = CURRENT_MOUSE_POSITION;
 	char *number_formated = (char *)malloc(sizeof(char)*chars_in_number);
-	sprintf(number_formated, "%04d", CURRENT_MOUSE_POSITION);
+
 	SIZE total_width = xfs->max_bounds.width * chars_in_number + xfs->max_bounds.descent;
 
+	unsigned int mouse_position_for_print_x, mouse_position_for_print_y;
 	switch(CURRENT_DIRECTION) {
 		case DIRECTION_N:
-			XDrawImageString(display, window, gc, 
-				xfs->max_bounds.descent * 2, CURRENT_HEIGHT - xfs->max_bounds.descent * 2, 
-				number_formated, chars_in_number);
+			mouse_position_for_print_x = xfs->max_bounds.descent * 2;
+			mouse_position_for_print_y = CURRENT_HEIGHT - xfs->max_bounds.descent * 2;
 			break;
 		case DIRECTION_S:
-			XDrawImageString(display, window, gc, 
-				xfs->max_bounds.descent * 2, xfs->max_bounds.ascent + xfs->max_bounds.descent, 
-				number_formated, chars_in_number);
+			mouse_position_for_print_x = xfs->max_bounds.descent * 2;
+			mouse_position_for_print_y = xfs->max_bounds.ascent + xfs->max_bounds.descent;
 			break;
 		case DIRECTION_W:
-			XDrawImageString(display, window, gc, 
-				CURRENT_WIDTH - total_width, xfs->max_bounds.ascent + xfs->max_bounds.descent, 
-				number_formated, chars_in_number);
+			mouse_position_for_print_x = CURRENT_WIDTH - total_width;
+			mouse_position_for_print_y = xfs->max_bounds.ascent + xfs->max_bounds.descent;
 			break;
 		case DIRECTION_E:
-			XDrawImageString(display, window, gc, 
-				xfs->max_bounds.descent, xfs->max_bounds.ascent + xfs->max_bounds.descent, 
-				number_formated, chars_in_number);
+			mouse_position_for_print_x = xfs->max_bounds.descent;
+			mouse_position_for_print_y = xfs->max_bounds.ascent + xfs->max_bounds.descent;
 			break;
 	}
+
+	switch (CURRENT_MEASURE_FLOW) {
+		case MEASURE_FLOW_NORMAL:
+			break;
+		case MEASURE_FLOW_INVERTED:
+			switch (CURRENT_DIRECTION) {
+				case DIRECTION_N:
+				case DIRECTION_S:
+					mouse_position_for_print = CURRENT_WIDTH - mouse_position_for_print;
+
+					mouse_position_for_print_x = CURRENT_WIDTH - total_width;
+					break;
+				case DIRECTION_W:
+				case DIRECTION_E:
+					mouse_position_for_print = CURRENT_HEIGHT - mouse_position_for_print;
+
+					mouse_position_for_print_y = CURRENT_HEIGHT;
+					break;
+			}
+			break;
+		default:
+			break;
+	}
+
+	sprintf(number_formated, "%04d", mouse_position_for_print);
+
+	XDrawImageString(display, window, gc, 
+		mouse_position_for_print_x, mouse_position_for_print_y, 
+		number_formated, chars_in_number);
 
 	free(number_formated);
 }
