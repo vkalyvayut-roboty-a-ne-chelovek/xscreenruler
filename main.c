@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <err.h>
+#include <math.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -12,12 +13,13 @@
 typedef unsigned int DIRECTION;
 typedef unsigned int SIZE;
 
-#define DEFAULT_HEIGHT (SIZE)75
-#define DEFAULT_WIDTH (SIZE)(DEFAULT_HEIGHT * 2)
-#define SIZE_SMALL (SIZE)(DEFAULT_HEIGHT * 5)
-#define SIZE_MEDIUM (SIZE)(DEFAULT_HEIGHT * 7)
-#define SIZE_TALL (SIZE)(DEFAULT_HEIGHT * 9)
+#define DEFAULT_HEIGHT (SIZE)100
+#define DEFAULT_WIDTH (SIZE)(DEFAULT_HEIGHT * 2) // 200
+#define SIZE_SMALL (SIZE)(DEFAULT_HEIGHT * 5) // 500
+#define SIZE_MEDIUM (SIZE)(DEFAULT_HEIGHT * 8) // 800
+#define SIZE_TALL (SIZE)(DEFAULT_HEIGHT * 10) // 100
 
+#define WINDOW_PADDING (SIZE)10
 
 
 #define DIRECTION_N (DIRECTION)1
@@ -33,6 +35,11 @@ typedef unsigned int SIZE;
 #define MEASURE_FLOW_NORMAL 1
 #define MEASURE_FLOW_INVERTED 2
 
+#define LINE_HEIGHT_NORMAL (SIZE)10
+#define LINE_HEIGHT_MEDIUM (LINE_HEIGHT_NORMAL * 2)
+#define LINE_HEIGHT_BIG (LINE_HEIGHT_NORMAL * 3)
+#define DEFAULT_LINE_HEIGHT LINE_HEIGHT_NORMAL
+
 
 /***** functions *****/
 
@@ -47,7 +54,8 @@ void change_direction(DIRECTION);
 void flip_flow();
 
 void draw_bg();
-void _draw_bg_measurement_number(unsigned int, unsigned int, SIZE, unsigned int, char *, unsigned int *, unsigned int *, unsigned int *, unsigned int *);
+void _draw_bg_measurement_marks();
+// void _draw_bg_measurement_number();
 
 void draw_mouse_position();
 void draw_mouse_position_marker();
@@ -75,6 +83,7 @@ unsigned int CURRENT_DIRECTION = DEFAULT_DIRECTON;
 SIZE CURRENT_WIDTH, CURRENT_HEIGHT, CURRENT_POSITION_X, CURRENT_POSITION_Y, CURRENT_MOUSE_POSITION, MOUSE_POSITION_PREV_X, MOUSE_POSITION_PREV_Y;
 
 DIRECTION CURRENT_MEASURE_FLOW;
+SIZE CURRENT_LINE_HEIGHT;
 
 typedef struct {
     unsigned long   flags;
@@ -308,7 +317,11 @@ void init_default_sizes_and_positions() {
 	SIZE_FULLSCREEN = xwa.width;
 	CURRENT_POSITION_X = DEFAULT_POSITION_X; CURRENT_POSITION_Y = DEFAULT_POSITION_Y;
 	CURRENT_MOUSE_POSITION = 0;
+
 	CURRENT_MEASURE_FLOW = MEASURE_FLOW_INVERTED;
+	CURRENT_MEASURE_FLOW = MEASURE_FLOW_NORMAL;
+
+	CURRENT_LINE_HEIGHT = DEFAULT_LINE_HEIGHT;
 }
 
 void get_default_sizes_for_direction(DIRECTION direction, unsigned int *width, unsigned int *height) {
@@ -371,16 +384,16 @@ void change_position(DIRECTION direction, XEvent *e) {
 void change_size(SIZE size) {
 	switch(CURRENT_DIRECTION) {
 		case DIRECTION_N:
-			CURRENT_WIDTH = size;
+			CURRENT_WIDTH = size + (WINDOW_PADDING * 2);
 			break;
 		case DIRECTION_S:
-			CURRENT_WIDTH = size;
+			CURRENT_WIDTH = size + (WINDOW_PADDING * 2);
 			break;
 		case DIRECTION_W:
-			CURRENT_HEIGHT = size;
+			CURRENT_HEIGHT = size + (WINDOW_PADDING * 2);
 			break;
 		case DIRECTION_E:
-			CURRENT_HEIGHT = size;
+			CURRENT_HEIGHT = size + (WINDOW_PADDING * 2);
 			break;
 		default:
 			break;
@@ -419,87 +432,144 @@ void flip_flow() {
 
 void draw_bg() {
 	XClearWindow(display, window);
-	unsigned int i, step_i, start_i, finish_i;
-	unsigned int line_height_default = 10;
-	unsigned int line_height_medium = 20;
-	unsigned int line_height_big = 30;
+	
+	_draw_bg_measurement_marks();
+	// _draw_bg_measurement_number();
 
-	start_i = 0;
-	step_i = 1;
+	
+}
+
+// void _draw_bg_measurement_number() {
+// 	unsigned int chars_in_number = 4;
+// 	char *number_formated = (char *)malloc(sizeof(char)*chars_in_number);
+// 	SIZE total_width = xfs->max_bounds.width * chars_in_number;
+// 	sprintf(number_formated, "%04d", i);
+// 	unsigned int number_formated_position_x, number_formated_position_y;
+// 	switch(CURRENT_DIRECTION) {
+// 		case DIRECTION_N:
+// 			number_formated_position_x = i - total_width / 2;
+// 			number_formated_position_y = line_height + xfs->max_bounds.ascent * 2;
+// 			break;
+// 		case DIRECTION_S:
+// 			number_formated_position_x = i - total_width / 2;
+// 			number_formated_position_y = line_height + xfs->max_bounds.ascent;
+// 			break;
+// 		case DIRECTION_W:
+// 			number_formated_position_x = DEFAULT_HEIGHT - total_width;
+// 			number_formated_position_y = i + xfs->max_bounds.descent + 1;
+// 			break;
+// 		case DIRECTION_E:
+// 			number_formated_position_x = xfs->max_bounds.width;
+// 			number_formated_position_y = i + xfs->max_bounds.descent + 1;
+// 			break;
+// 	}
+
+// 	if ((i != 0) && ((i % 50) == 0)) {
+// 		XDrawImageString(display, window, gc, 
+// 			number_formated_position_x, number_formated_position_y, 
+// 			number_formated, chars_in_number);
+// 	}
+
+// 	free(number_formated);
+// }
+
+void _draw_bg_measurement_marks() {
+	int current_i, start_i, finish_i, step_i;
+
 	switch (CURRENT_DIRECTION) {
 		case DIRECTION_N:
 		case DIRECTION_S:
-			finish_i = CURRENT_WIDTH + step_i;
+			start_i = WINDOW_PADDING;
+			finish_i = CURRENT_WIDTH;
+			step_i = 1;
+
+			switch (CURRENT_MEASURE_FLOW) {
+				case MEASURE_FLOW_NORMAL:
+					break;
+				case MEASURE_FLOW_INVERTED:
+					start_i = CURRENT_WIDTH - WINDOW_PADDING;
+					finish_i = 0;
+					step_i = -1;
+					break;
+			}
 			break;
-		case DIRECTION_W:
 		case DIRECTION_E:
-			finish_i = CURRENT_HEIGHT + step_i;
+		case DIRECTION_W:
+			start_i = WINDOW_PADDING;
+			finish_i = CURRENT_HEIGHT;
+			step_i = 1;
+
+			switch (CURRENT_MEASURE_FLOW) {
+				case MEASURE_FLOW_NORMAL:
+					break;
+				case MEASURE_FLOW_INVERTED:
+					start_i = CURRENT_HEIGHT - WINDOW_PADDING;
+					finish_i = 0;
+					step_i = -1;
+					break;
+			}
 			break;
 	}
 
-	unsigned int chars_in_number = 4;
-	char *number_formated = (char *)malloc(sizeof(char)*chars_in_number);
-	SIZE total_width = xfs->max_bounds.width * chars_in_number;
+	current_i = start_i;
+	int x1, y1, x2, y2;
+	while(current_i != finish_i) {
 
-	unsigned int x1, x2, y1, y2;
-	unsigned int line_height = line_height_default;
-	for(i = start_i; i < finish_i; i+=step_i) {
-		if ((i % 10) == 0) {
-			line_height = line_height_medium;
-			if ((i % 50) == 0) {
-				line_height = line_height_big;
-			}
+		unsigned int number_to_divide = abs(current_i - WINDOW_PADDING);
+		// высота линии
+		if (number_to_divide % 10 == 0) {
+			CURRENT_LINE_HEIGHT = LINE_HEIGHT_MEDIUM;
 		} else {
-			line_height = line_height_default;
+			CURRENT_LINE_HEIGHT = DEFAULT_LINE_HEIGHT;
 		}
 
-		_draw_bg_measurement_number(i, chars_in_number, total_width, line_height, number_formated, &x1, &y1, &x2, &y2);
-		
-		if (i % 2 == 0) {
+		// положение линии при разных оирентациях
+		switch (CURRENT_DIRECTION) {
+			case DIRECTION_N:
+			case DIRECTION_S:
+				x1 = current_i;
+				x2 = current_i;
+
+				y1 = 0;
+				y2 = CURRENT_LINE_HEIGHT;
+				break;
+			case DIRECTION_E:
+			case DIRECTION_W:
+				x1 = 0;
+				x2 = CURRENT_LINE_HEIGHT;
+
+				y1 = current_i;
+				y2 = current_i;
+				break;	
+		}
+
+		switch (CURRENT_DIRECTION) {
+			case DIRECTION_N:
+				break;
+			case DIRECTION_S:
+				y1 = CURRENT_HEIGHT - CURRENT_LINE_HEIGHT;
+				y2 = CURRENT_HEIGHT;
+				break;
+			case DIRECTION_E:
+				x1 = CURRENT_WIDTH - CURRENT_LINE_HEIGHT;
+				x2 = CURRENT_WIDTH;
+				break;
+			case DIRECTION_W:
+				break;	
+		}
+
+		if (number_to_divide % 2 == 0) {
 			XDrawLine(display, window, gc, x1, y1, x2, y2);
 		}
-	}
 
-	free(number_formated);
-}
-
-void _draw_bg_measurement_number(unsigned int i, unsigned int chars_in_number, SIZE total_width, unsigned int line_height, char *number_formated, unsigned int *x1, unsigned int *y1, unsigned int *x2, unsigned int *y2) {
-	sprintf(number_formated, "%04d", i);
-	unsigned int number_formated_position_x, number_formated_position_y;
-	switch(CURRENT_DIRECTION) {
-		case DIRECTION_N:
-			*x1 = i-1; *y1 = 0; *x2 = i-1; *y2 = line_height;
-			number_formated_position_x = i - total_width / 2;
-			number_formated_position_y = line_height + xfs->max_bounds.ascent * 2;
-			break;
-		case DIRECTION_S:
-			*x1 = i-1; *y1 = DEFAULT_HEIGHT; *x2 = i-1; *y2 = DEFAULT_HEIGHT-line_height;
-			number_formated_position_x = i - total_width / 2;
-			number_formated_position_y = line_height + xfs->max_bounds.ascent;
-			break;
-		case DIRECTION_W:
-			*x1 = 0; *y1 = i-2; *x2 = line_height; *y2 = i-2;
-			number_formated_position_x = DEFAULT_HEIGHT - total_width;
-			number_formated_position_y = i + xfs->max_bounds.descent + 1;
-			break;
-		case DIRECTION_E:
-			*x1 = DEFAULT_HEIGHT; *y1 = i-2; *x2 = DEFAULT_HEIGHT-line_height; *y2 = i-2;
-			number_formated_position_x = xfs->max_bounds.width;
-			number_formated_position_y = i + xfs->max_bounds.descent + 1;
-			break;
-	}
-
-	if ((i != 0) && ((i % 50) == 0)) {
-		XDrawImageString(display, window, gc, 
-			number_formated_position_x, number_formated_position_y, 
-			number_formated, chars_in_number);
+		current_i += step_i;
 	}
 }
 
 void draw_mouse_position() {
 	unsigned int chars_in_number = 4;
 
-	SIZE mouse_position_for_print = CURRENT_MOUSE_POSITION;
+	int mouse_position_for_print = CURRENT_MOUSE_POSITION;
 	char *number_formated = (char *)malloc(sizeof(char)*chars_in_number);
 
 	SIZE total_width = xfs->max_bounds.width * chars_in_number + xfs->max_bounds.descent;
@@ -524,27 +594,35 @@ void draw_mouse_position() {
 			break;
 	}
 
-	switch (CURRENT_MEASURE_FLOW) {
-		case MEASURE_FLOW_NORMAL:
-			break;
-		case MEASURE_FLOW_INVERTED:
-			switch (CURRENT_DIRECTION) {
-				case DIRECTION_N:
-				case DIRECTION_S:
-					mouse_position_for_print = CURRENT_WIDTH - mouse_position_for_print;
-
-					mouse_position_for_print_x = CURRENT_WIDTH - total_width;
+	switch(CURRENT_DIRECTION) {
+		case DIRECTION_N:
+		case DIRECTION_S:
+			mouse_position_for_print = CURRENT_MOUSE_POSITION - 1 - WINDOW_PADDING;
+			switch (CURRENT_MEASURE_FLOW) {
+				case MEASURE_FLOW_NORMAL:
 					break;
-				case DIRECTION_W:
-				case DIRECTION_E:
-					mouse_position_for_print = CURRENT_HEIGHT - mouse_position_for_print;
-
-					mouse_position_for_print_y = CURRENT_HEIGHT;
+				case MEASURE_FLOW_INVERTED:
+					mouse_position_for_print_x = CURRENT_WIDTH - WINDOW_PADDING * 3;
+					mouse_position_for_print = CURRENT_WIDTH - CURRENT_MOUSE_POSITION + 1 - WINDOW_PADDING;
 					break;
 			}
 			break;
-		default:
+		case DIRECTION_W:
+		case DIRECTION_E:
+			mouse_position_for_print = CURRENT_MOUSE_POSITION - 2 - WINDOW_PADDING;
+			switch (CURRENT_MEASURE_FLOW) {
+				case MEASURE_FLOW_NORMAL:
+					break;
+				case MEASURE_FLOW_INVERTED:
+					mouse_position_for_print_y = CURRENT_HEIGHT - WINDOW_PADDING;
+					mouse_position_for_print = CURRENT_HEIGHT - CURRENT_MOUSE_POSITION + 2 - WINDOW_PADDING;
+					break;
+			}
 			break;
+	}
+
+	if (mouse_position_for_print < 0) {
+		mouse_position_for_print = 0;
 	}
 
 	sprintf(number_formated, "%04d", mouse_position_for_print);
@@ -596,8 +674,8 @@ void draw_mouse_position_marker() {
 	}
 
 	XDrawLine(display, window, gc, 
-				mouse_marker_position_x1, mouse_marker_position_y1, 
-				mouse_marker_position_x2, mouse_marker_position_y2);
+		mouse_marker_position_x1, mouse_marker_position_y1, 
+		mouse_marker_position_x2, mouse_marker_position_y2);
 }
 
 void draw_bg_and_mouse_position() {
