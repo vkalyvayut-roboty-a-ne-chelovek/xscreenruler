@@ -55,7 +55,7 @@ void flip_flow();
 
 void draw_bg();
 void _draw_bg_measurement_marks();
-// void _draw_bg_measurement_number();
+void _draw_bg_measurement_number();
 
 void draw_mouse_position();
 void draw_mouse_position_marker();
@@ -432,46 +432,104 @@ void flip_flow() {
 
 void draw_bg() {
 	XClearWindow(display, window);
-	
-	_draw_bg_measurement_marks();
-	// _draw_bg_measurement_number();
 
-	
+	_draw_bg_measurement_marks();
+	_draw_bg_measurement_number();	
 }
 
-// void _draw_bg_measurement_number() {
-// 	unsigned int chars_in_number = 4;
-// 	char *number_formated = (char *)malloc(sizeof(char)*chars_in_number);
-// 	SIZE total_width = xfs->max_bounds.width * chars_in_number;
-// 	sprintf(number_formated, "%04d", i);
-// 	unsigned int number_formated_position_x, number_formated_position_y;
-// 	switch(CURRENT_DIRECTION) {
-// 		case DIRECTION_N:
-// 			number_formated_position_x = i - total_width / 2;
-// 			number_formated_position_y = line_height + xfs->max_bounds.ascent * 2;
-// 			break;
-// 		case DIRECTION_S:
-// 			number_formated_position_x = i - total_width / 2;
-// 			number_formated_position_y = line_height + xfs->max_bounds.ascent;
-// 			break;
-// 		case DIRECTION_W:
-// 			number_formated_position_x = DEFAULT_HEIGHT - total_width;
-// 			number_formated_position_y = i + xfs->max_bounds.descent + 1;
-// 			break;
-// 		case DIRECTION_E:
-// 			number_formated_position_x = xfs->max_bounds.width;
-// 			number_formated_position_y = i + xfs->max_bounds.descent + 1;
-// 			break;
-// 	}
+void _draw_bg_measurement_number() {
+	int current_i, start_i, finish_i, step_i;
 
-// 	if ((i != 0) && ((i % 50) == 0)) {
-// 		XDrawImageString(display, window, gc, 
-// 			number_formated_position_x, number_formated_position_y, 
-// 			number_formated, chars_in_number);
-// 	}
+	unsigned int chars_in_number = 4;
+	char *number_formated = (char *)malloc(sizeof(char)*chars_in_number);
+	SIZE total_width = xfs->max_bounds.width * chars_in_number;
 
-// 	free(number_formated);
-// }
+	switch (CURRENT_DIRECTION) {
+		case DIRECTION_N:
+		case DIRECTION_S:
+			start_i = WINDOW_PADDING;
+			finish_i = CURRENT_WIDTH;
+			step_i = 1;
+
+			switch (CURRENT_MEASURE_FLOW) {
+				case MEASURE_FLOW_NORMAL:
+					break;
+				case MEASURE_FLOW_INVERTED:
+					start_i = CURRENT_WIDTH - WINDOW_PADDING;
+					finish_i = 0;
+					step_i = -1;
+					break;
+			}
+			break;
+		case DIRECTION_E:
+		case DIRECTION_W:
+			start_i = WINDOW_PADDING;
+			finish_i = CURRENT_HEIGHT;
+			step_i = 1;
+			break;
+	}
+
+	current_i = start_i;
+	
+	int number_formated_position_x, number_formated_position_y;
+	while(current_i != finish_i) {
+		unsigned int number_to_divide = abs(current_i - WINDOW_PADDING);
+
+		switch(CURRENT_DIRECTION) {
+			case DIRECTION_N:
+				number_formated_position_x = current_i - total_width / 2;
+				number_formated_position_y = CURRENT_LINE_HEIGHT + xfs->max_bounds.ascent * 2;
+				break;
+			case DIRECTION_S:
+				number_formated_position_x = current_i - total_width / 2;
+				number_formated_position_y = CURRENT_HEIGHT - CURRENT_LINE_HEIGHT - xfs->max_bounds.ascent;
+				break;
+			case DIRECTION_E:
+				number_formated_position_x = CURRENT_WIDTH - CURRENT_LINE_HEIGHT - total_width * 2;
+				number_formated_position_y = current_i + xfs->max_bounds.descent * 2;
+				break;
+			case DIRECTION_W:
+				number_formated_position_x = CURRENT_LINE_HEIGHT + total_width;
+				number_formated_position_y = current_i + xfs->max_bounds.descent * 2;
+				break;
+		}
+
+		switch(CURRENT_DIRECTION) {
+			case DIRECTION_N:
+			case DIRECTION_S:
+				switch (CURRENT_MEASURE_FLOW) {
+					case MEASURE_FLOW_NORMAL:
+						break;
+					case MEASURE_FLOW_INVERTED:
+						number_formated_position_x = CURRENT_WIDTH - current_i - total_width / 2;
+						break;
+				}
+				break;
+			case DIRECTION_E:
+			case DIRECTION_W:
+				switch (CURRENT_MEASURE_FLOW) {
+					case MEASURE_FLOW_NORMAL:
+						break;
+					case MEASURE_FLOW_INVERTED:
+						number_formated_position_y = CURRENT_HEIGHT - current_i + xfs->max_bounds.descent * 2;
+						break;
+				}
+				break;
+		}
+
+		sprintf(number_formated, "%04d", number_to_divide);
+		if (number_to_divide % 50 == 0) {
+			XDrawImageString(display, window, gc, 
+				number_formated_position_x, number_formated_position_y, 
+				number_formated, chars_in_number);
+		}
+
+
+		current_i += step_i;
+	}
+
+	free(number_formated);
+}
 
 void _draw_bg_measurement_marks() {
 	int current_i, start_i, finish_i, step_i;
@@ -514,7 +572,6 @@ void _draw_bg_measurement_marks() {
 	current_i = start_i;
 	int x1, y1, x2, y2;
 	while(current_i != finish_i) {
-
 		unsigned int number_to_divide = abs(current_i - WINDOW_PADDING);
 		// высота линии
 		if (number_to_divide % 10 == 0) {
