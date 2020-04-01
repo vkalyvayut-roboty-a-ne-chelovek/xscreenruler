@@ -19,8 +19,8 @@ CPPFLAGS=-I/usr/X11R6/include LDFLAGS=-L/usr/X11R6/lib make
 ./xscreenruler [-h] [-fg <color>] [-bg <color>]
 
   -h - this message
-  -fg <color> - set foreground (i.e. text) color.
-  -bg <color> - set background color.
+  -fg <color> - set foreground (i.e. text) color (e.g. yellow, white).
+  -bg <color> - set background color (e.g. black, red).
 
   Where <color> is either:
     An X11 color name (e.g. 'red').
