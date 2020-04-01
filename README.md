@@ -33,6 +33,9 @@ Keybindings:
     shift+w - west
     shift+e - east
 
+  Measurement direction:
+    shift+r - invert(default from left-to-right to right-to-left, from top-to-bottom to bottom-to-top)
+
   Ruler size:
     ctrl+d - default (150px) size
     ctrl+s - small (375px) size

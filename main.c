@@ -89,7 +89,7 @@ typedef struct {
     unsigned long   flags;
     unsigned long   functions;
     unsigned long   decorations;
-} Hints; /*****  достаточно и 3 свойств *****/
+} Hints;
 
 unsigned long pixel_color_1, pixel_color_2;
 
@@ -478,11 +478,11 @@ void _draw_bg_measurement_number() {
 		switch(CURRENT_DIRECTION) {
 			case DIRECTION_N:
 				number_formated_position_x = current_i - total_width / 2;
-				number_formated_position_y = CURRENT_LINE_HEIGHT + xfs->max_bounds.ascent * 2;
+				number_formated_position_y = CURRENT_LINE_HEIGHT + xfs->max_bounds.ascent * 4;
 				break;
 			case DIRECTION_S:
 				number_formated_position_x = current_i - total_width / 2;
-				number_formated_position_y = CURRENT_HEIGHT - CURRENT_LINE_HEIGHT - xfs->max_bounds.ascent;
+				number_formated_position_y = CURRENT_HEIGHT - CURRENT_LINE_HEIGHT - xfs->max_bounds.ascent * 2;
 				break;
 			case DIRECTION_E:
 				number_formated_position_x = CURRENT_WIDTH - CURRENT_LINE_HEIGHT - total_width * 2;
@@ -572,10 +572,13 @@ void _draw_bg_measurement_marks() {
 	current_i = start_i;
 	int x1, y1, x2, y2;
 	while(current_i != finish_i) {
-		unsigned int number_to_divide = abs(current_i - WINDOW_PADDING);
+		int number_to_divide = abs(current_i - WINDOW_PADDING);
 		// высота линии
 		if (number_to_divide % 10 == 0) {
 			CURRENT_LINE_HEIGHT = LINE_HEIGHT_MEDIUM;
+			if (number_to_divide % 50 == 0) {
+				CURRENT_LINE_HEIGHT = LINE_HEIGHT_BIG;
+			}
 		} else {
 			CURRENT_LINE_HEIGHT = DEFAULT_LINE_HEIGHT;
 		}
@@ -768,6 +771,9 @@ void usage(int argc, char **argv) {
 	    "    shift+s - south\n"
 	    "    shift+w - west\n"
 	    "    shift+e - east\n"
+	    "\n"
+	    "  Measurement direction:\n"
+	    "    shift+r - invert(default from left-to-right to right-to-left, from top-to-bottom to bottom-to-top)\n"
 	    "\n"
 	    "  Ruler size:\n"
 	    "    ctrl+d - default (%dpx) size\n"
